@@ -36,7 +36,7 @@ jobs:
             git show origin/dist:stable/adkit.conf > /tmp/keep/stable.conf || true
           fi
           git checkout --orphan dist-publish
-          git rm -rfq . || true
+          git rm -rfq --cached . || true          # 只清空索引（orphan 下全部文件都是 staged，git rm 会拒绝直接删）
           mkdir -p stable latest
           cp dist/latest/adkit.conf latest/adkit.conf
           cp dist/adkit-adonly.conf adkit-adonly.conf
@@ -47,7 +47,7 @@ jobs:
           else
             cp dist/stable/adkit.conf stable/adkit.conf       # 首次 bootstrap
           fi
-          git add -A
+          git add stable latest pending-stable.conf adkit-adonly.conf stats.json   # 显式路径，绝不 -A（防混入源码/cache）
           git commit -m "build $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git branch -M dist
           git push -f origin dist
