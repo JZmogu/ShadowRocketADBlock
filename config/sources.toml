@@ -1,0 +1,39 @@
+# adkit 源登记表（v0.1）：enabled=false 可一键剔除任何源；tier 字段留作后续分级
+[meta]
+repo = "JZmogu/ShadowRocketADBlock"
+# dist 分支上的两个通道：stable 给朋友（周二钉版），latest 给我自己（日更尝鲜）
+stable_url = "https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/stable/adkit.conf"
+latest_url = "https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/latest/adkit.conf"
+
+[[sources]]
+id = "johnshall"
+name = "Johnshall/Shadowrocket-ADBlock-Rules-Forever（仅取 ad_only 段）"
+url = "https://raw.githubusercontent.com/Johnshall/Shadowrocket-ADBlock-Rules-Forever/release/sr_ad_only.conf"
+parser = "sr_conf_rule"
+license = "CC-BY-SA-4.0"
+enabled = true
+
+[[sources]]
+id = "antiad"
+name = "privacy-protection-tools/anti-AD（GitHub master 产物，比 anti-ad.net 站点全量且稳定）"
+url = "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-surge.txt"
+fallback_urls = ["https://cdn.jsdelivr.net/gh/privacy-protection-tools/anti-AD@master/anti-ad-surge.txt"]
+parser = "surge_list"
+license = "MIT"
+enabled = true
+
+[[sources]]
+id = "awavenue"
+name = "TG-Twilight/AWAvenue-Ads-Rule（秋风，仅 Surge-RULE-SET 全量档）"
+url = "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Surge-RULE-SET.list"
+parser = "surge_list"
+license = "GPL-3.0"
+enabled = true
+
+[[sources]]
+id = "huijingfei"
+name = "huijingfei/Shadowrocket-Rules（仅 [Rule] 段；开屏改写见 rewrite.toml）"
+url = "https://raw.githubusercontent.com/huijingfei/Shadowrocket-Rules/main/sr_app_ad.conf"
+parser = "sr_conf_rule"
+license = "无许可证（已按出处收录，作者异议即剔除）"
+enabled = true

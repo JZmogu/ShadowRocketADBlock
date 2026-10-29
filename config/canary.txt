@@ -1,0 +1,70 @@
+# 金丝雀：这些域名被任何 REJECT 规则命中即构建失败（防上游投毒/坏源混入）。
+# 只放"绝不允许被拦"的核心服务域，宁缺毋滥。
+weixin.qq.com
+mp.weixin.qq.com
+wx.qlogo.cn
+sqqimgs.com
+qq.com
+weibo.com
+weibo.cn
+taobao.com
+tmall.com
+alipay.com
+aliyun.com
+alicdn.com
+jd.com
+360buyimg.com
+baidu.com
+bdstatic.com
+bilibili.com
+hdslb.com
+bilivideo.com
+zhihu.com
+xiaohongshu.com
+douyin.com
+meituan.com
+dianping.com
+mi.com
+xiaomi.com
+apple.com
+cdn-apple.com
+apple-dns.net
+googleapis.com
+google.com
+github.com
+githubusercontent.com
+youtube.com
+googlevideo.com
+jd.hk
+kuaishou.com
+qpic.cn
+# ==== 我的常用 App 家族核心域（被拦即阻止发布）====
+# 微博系
+sinaimg.cn
+# 小红书系
+xhscdn.com
+# 阿里系
+goofish.com
+1688.com
+tb.cn
+duanqu.com
+# 腾讯系
+y.qq.com
+music.qq.com
+y.gtimg.cn
+gtimg.cn
+tenpay.com
+# 网易系
+mail.163.com
+youdao.com
+dict.youdao.com
+# 美团系
+meituan.net
+s3plus.meituan.net
+p0.meituan.net
+open-meituan.top
+# 淘宝闪购(饿了么)
+ele.me
+elemecdn.com
+# B站主接口
+app.bilibili.com

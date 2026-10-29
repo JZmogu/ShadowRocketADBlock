@@ -1,0 +1,47 @@
+"""渲染器（v0.1 只做 SR）：一键订阅全量配置 + 纯规则文件。"""
+from __future__ import annotations
+
+TYPE_ORDER = {"URL-REGEX": 0, "DOMAIN-KEYWORD": 1, "DOMAIN": 2, "DOMAIN-SUFFIX": 3, "IP-CIDR": 4, "IP-CIDR6": 5}
+
+
+def _fmt(r) -> str:
+    if r.type in ("IP-CIDR", "IP-CIDR6"):
+        return f"{r.type},{r.pattern},{r.action},no-resolve"
+    return f"{r.type},{r.pattern},{r.action}"
+
+
+def _rule_lines(rules) -> list[str]:
+    # SR 是 first-match：用户白名单最前；精确 REJECT 主区居中；上游宽泛 DIRECT 垫底兜底。
+    user_wl = [r for r in rules if r.action == "DIRECT" and "whitelist" in r.sources]
+    rest = [r for r in rules if r.action != "DIRECT"]
+    updir = [r for r in rules if r.action == "DIRECT" and "whitelist" not in r.sources]
+    key = lambda r: (TYPE_ORDER.get(r.type, 9), r.pattern)
+    rest.sort(key=key)
+    updir.sort(key=key)
+    out = ["# ==== 用户白名单例外区（最高优先级，DIRECT）===="]
+    out += [_fmt(r) for r in user_wl]
+    out.append("")
+    out.append("# ==== 广告拦截主区：精确强规则 → 域名 → IP（已去重吸收；优先于下方宽泛 DIRECT）====")
+    out += [_fmt(r) for r in rest]
+    out.append("")
+    out.append("# ==== 上游精选放行（DIRECT 兜底：上面未拦截的国内常用域直连，省代理流量）====")
+    out += [_fmt(r) for r in updir]
+    return out
+
+
+def render_full_conf(rules, rewrites, mitm_hosts, update_url, header) -> str:
+    lines = [header, "", "[General]", f"update-url = {update_url}", ""]
+    lines.append("[Rule]")
+    lines += _rule_lines(rules)
+    if rewrites:
+        lines += ["", "[URL Rewrite]"]
+        for w in rewrites:
+            lines.append(f'{w["pattern"]} {w["target"]} {w["action"]}')
+    if mitm_hosts:
+        lines += ["", "[MITM]", "hostname = " + ",".join(sorted(mitm_hosts))]
+    return "\n".join(lines) + "\n"
+
+
+def render_adonly(rules, header) -> str:
+    lines = [header, "", "[Rule]"] + _rule_lines(rules)
+    return "\n".join(lines) + "\n"

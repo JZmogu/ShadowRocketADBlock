@@ -1,0 +1,42 @@
+name: build
+# 每日 09:00（北京）自动构建 → 推 dist 分支（latest 通道即刻生效，stable 通道不动）
+on:
+  schedule:
+    - cron: "0 1 * * *" # UTC 01:00 = 北京 09:00
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["config/**", "src/**", "main.py"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: unit tests
+        run: python -m unittest discover -s tests -q
+      - name: build (quality gates inside)
+        run: python main.py build
+      - name: publish to dist branch
+        run: |
+          set -e
+          git config user.name "adkit-bot"
+          git config user.email "adkit-bot@users.noreply.github.com"
+          git checkout --orphan dist-publish
+          git rm -rfq . || true
+          mkdir -p stable latest
+          cp dist/stable/adkit.conf stable/adkit.conf
+          cp dist/latest/adkit.conf latest/adkit.conf
+          cp dist/adkit-adonly.conf adkit-adonly.conf
+          cp dist/stats.json stats.json
+          git add -A
+          git commit -m "build $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git branch -M dist
+          git push -f origin dist
+      # 任一步失败（含质量门退出码≠0）都不会执行 publish：dist 分支自动 keep-last-good

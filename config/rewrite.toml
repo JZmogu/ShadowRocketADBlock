@@ -1,0 +1,343 @@
+# 人工精选的开屏/内嵌广告 URL 改写登记表（v0.1）——不自动跟随上游，手工钉版。
+# 语法为 Shadowrocket 原生： <正则> <目标> <动作>；目标 "_" 表示不改 URL 直接处置响应。
+# 首批 18 条：全文照抄 huijingfei/Shadowrocket-Rules sr_app_ad.conf [URL Rewrite]（asof 2026-10-29）
+# 以后加 deezertidal startingad / AdBlock 分桶合并时，逐条登记 src 与 asof。
+
+[[rewrite]]
+site = "google.cn 跳转"
+pattern = '^https?:\/\/(www\.)?(g\.cn|google\.cn)\/?$'
+target = "https://www.google.com"
+action = "307"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "天星书城 JS 注入"
+pattern = '^https:\/\/www\.tianxibook\.com\/public\/\d{6}\.js$'
+target = "_"
+action = "REJECT-DICT"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "网易云音乐 广告配置"
+pattern = '^https?:\/\/interface\.music\.163\.com\/eapi\/ad\/config\/get'
+target = "_"
+action = "REJECT"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "京东 App 开屏图"
+pattern = '^https?:\/\/m\.360buyimg\.com\/mobilecms\/s1125'
+target = "_"
+action = "REJECT-200"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "知乎 开屏"
+pattern = '^https?:\/\/api\.zhihu\.com\/commercial_api\/(real_time_)?launch_v2\?'
+target = "_"
+action = "REJECT-DICT"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "哔哩哔哩 开屏"
+pattern = '^https?:\/\/app\.bilibili\.com\/x\/v2\/splash\/(event\/list|brand\/list|show|list)'
+target = "_"
+action = "REJECT-DICT"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "高德地图 开屏/预热"
+pattern = '^https?:\/\/m5\.amap\.com\/ws\/(feature\/preheat\/bootevent|shield\/dsp\/app\/startup\/init|valueadded\/alimama\/splash_screen)'
+target = "_"
+action = "REJECT-DICT"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "京东 广告弹窗/首页弹层"
+pattern = '^https?:\/\/api\.m\.jd\.com\/client\.action\?functionId=(lite_advertising|homeAreaPop)'
+target = "_"
+action = "REJECT"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "京东 弹窗营销图"
+pattern = '^https?:\/\/(img\w|kjimg10)\.360buyimg\.com\/(pop|mcmktresadmin)\/jfs\/([\w\W]*)\.(jpg|png|heic|webp|avif)'
+target = "_"
+action = "REJECT-200"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "阿里创意素材图"
+pattern = '^https?:\/\/ossgw\.alicdn\.com\/creatives-assets\/(image|prod)\/([\w\W]*).(jpg|png|heic|webp)'
+target = "_"
+action = "REJECT-200"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "淘宝视频广告"
+pattern = '^https?:\/\/cloud\.video\.taobao\.com\/vod\/([\w\W]*).mp4'
+target = "_"
+action = "REJECT-200"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "淘宝 alimama 视频"
+pattern = '^https?:\/\/cloud\.video\.taobao\.com\/.*alimama.*\.mp4'
+target = "_"
+action = "REJECT-VIDEO"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "闲鱼 开屏"
+pattern = '^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlecommerce\.splash'
+target = "_"
+action = "REJECT-DICT"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "闲鱼 广告接口"
+pattern = '^https?:\/\/acs\.m\.goofish\.com\/gw\/mtop\.idle\.idleadv\.(.*)'
+target = "_"
+action = "REJECT-DICT"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "淘宝 服饰营销图"
+pattern = '^https?:\/\/img\.alicdn\.com\/imgextra\/i\w\/([\w\W]*)-at([\w\W]*)\.(jpg|png|heic|webp)'
+target = "_"
+action = "REJECT-200"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "阿里 CDN 开屏尺寸图"
+pattern = '^https?:\/\/(gw|heic|img)\.alicdn\.com\/imgextra\/i\w\/([\w\W]*)(1080-|1125-2436|1350|-1602|-1950|-2339|-2436|-2208|1170-2532)([\w\W]*)\.(jpg|png|heic|webp)'
+target = "_"
+action = "REJECT-200"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "58同城 开屏"
+pattern = '^https?:\/\/app\.58\.com\/api\/home\/appadv\/splashscreenadv'
+target = "_"
+action = "REJECT-DICT"
+src = "huijingfei@2026-10-29"
+
+[[rewrite]]
+site = "淘友圈 广告展示"
+pattern = '^https?:\/\/open\.taou\.com\/maimai\/adshow'
+target = "_"
+action = "REJECT"
+src = "huijingfei@2026-10-29"
+
+# ==== 以下按"我的常用 App 家族"精选（akiralereal 真机测试过的原样保留其动作；
+#      deezertidal startingad 的 - reject 归一化为 SR 原生动作）====
+
+# —— 阿里系（淘宝主开屏、1688、大麦、飞猪、淘宝闪购/饿了么、淘脉/taou）——
+[[rewrite]]
+site = "淘宝 主开屏"
+pattern = '^https?://guide-acs\.m\.taobao\.com/gw/mtop\.taobao\.wireless\.home\.splash\.awesome\.get(?:/|\?|$)'
+target = "_"
+action = "REJECT-200"
+src = "akiralereal@2026-10-29"
+
+[[rewrite]]
+site = "淘宝 广告接口"
+pattern = '^https?://acs\.m\.taobao\.com/gw/mtop\.alibaba\.advertisementservice\.getadv/'
+target = "_"
+action = "REJECT-200"
+src = "akiralereal@2026-10-29"
+
+[[rewrite]]
+site = "1688 启动广告"
+pattern = '^https?://acs\.m\.taobao\.com/gw/mtop\.alibaba\.cbu\.app\.homepage\.startup(?:/|\?|$)'
+target = "_"
+action = "REJECT-200"
+src = "akiralereal@2026-10-29"
+
+[[rewrite]]
+site = "大麦 开屏欢迎/弹窗"
+pattern = '^https?://acs\.m\.taobao\.com/gw/mtop\.damai\.(?:wireless\.home\.welcome|mec\.popup\.get)(?:/|\?|$)'
+target = "_"
+action = "REJECT-200"
+src = "akiralereal@2026-10-29"
+
+[[rewrite]]
+site = "飞猪 开屏"
+pattern = '^https?://acs\.m\.taobao\.com/gw/mtop\.fliggy\.crm\.screen\.(?:allresource|availablesplashstrategies)(?:/|\?|$)'
+target = "_"
+action = "REJECT-200"
+src = "akiralereal@2026-10-29"
+
+[[rewrite]]
+site = "淘宝闪购(饿了么) 促销资源"
+pattern = '^https?://elemecdn\.com/.+/sitemap(?:\?|$)'
+target = "_"
+action = "REJECT-200"
+src = "akiralereal@2026-10-29"
+
+[[rewrite]]
+site = "阿里 CDN 营销图(带开屏尺寸)"
+pattern = '^https://gw\.alicdn\.com/(?:tfs|tps)/.+\d{3,4}-\d{4}'
+target = "_"
+action = "REJECT-200"
+src = "deezertidal-startingad@2026-10-29"
+
+[[rewrite]]
+site = "淘脉 开屏/广告位/跟踪"
+pattern = '^https?://(?:open\.taou\.com/maimai/launch_ad|api\.taou\.com/sdk/global/splash_ad|track\.mm\.taou\.com/v\d+/track)'
+target = "_"
+action = "REJECT-DICT"
+src = "deezertidal-startingad@2026-10-29"
+
+[[rewrite]]
+site = "淘票票 广告查询"
+pattern = '^https://acs\.m\.taobao\.com/gw/mtop\.film\.mtopadvertiseapi\.queryadvertise/5\.0.*'
+target = "_"
+action = "REJECT-DICT"
+src = "deezertidal-startingad@2026-10-29"
+
+# —— 微博系（开屏广告接口 + 实时广告 + 国际版）——
+[[rewrite]]
+site = "微博 广告预载"
+pattern = '^https?://api\.weibo\.cn/\d+/ad/preload(?:\?|$)'
+target = "_"
+action = "REJECT-DICT"
+src = "akiralereal@2026-10-29"
+
+[[rewrite]]
+site = "微博 实时广告"
+pattern = '^https?://boot\.biz\.weibo\.com/v\d+/ad/(?:preload|realtime)(?:\?|$)'
+target = "_"
+action = "REJECT-DICT"
+src = "akiralereal@2026-10-29"
+
+[[rewrite]]
+site = "微博国际版 广告"
+pattern = '^https?://m?api\.weibo\.(?:cn|com)/\d+/ad/weibointl\?'
+target = "_"
+action = "REJECT-DICT"
+src = "akiralereal@2026-10-29"
+
+# —— 小红书系（开屏 + 信息流广告 + 归因上报）——
+[[rewrite]]
+site = "小红书 开屏"
+pattern = '^https?://[a-z]+\.xiaohongshu\.com/api/sns/v\d+/system_service/splash(?:\?|$)'
+target = "_"
+action = "REJECT-DICT"
+src = "akiralereal@2026-10-29"
+
+[[rewrite]]
+site = "小红书 广告接口"
+pattern = '^https?://[a-z]+\.xiaohongshu\.com/api/sns/v\d+/(?:tag/)?ads(?:\?|$)'
+target = "_"
+action = "REJECT-DICT"
+src = "akiralereal@2026-10-29"
+
+[[rewrite]]
+site = "小红书 搜索信息流广告"
+pattern = '^https?://edith\.xiaohongshu\.com/api/sns/v\d+/search/notes/recommend_info\?'
+target = "_"
+action = "REJECT-DICT"
+src = "akiralereal@2026-10-29"
+
+[[rewrite]]
+site = "小红书 广告互动/素材/归因"
+pattern = '^https?://www\.xiaohongshu\.com/api/sns/v\d+/(?:tag/ads_engage|ads/apple/record|ads/resource)'
+target = "_"
+action = "REJECT-DICT"
+src = "deezertidal-startingad@2026-10-29"
+
+[[rewrite]]
+site = "小红书 广告状态上报"
+pattern = '^https?://referee\.xiaohongshu\.com/v\d+/stateReport'
+target = "_"
+action = "REJECT-DICT"
+src = "deezertidal-startingad@2026-10-29"
+
+# —— 美团系（主App/外卖：开屏图、营销图、弹窗）——
+[[rewrite]]
+site = "美团 广告素材图"
+pattern = '^https?://img\.meituan\.net/(?:adunion|display|midas|bizad|brandCpt)/\w+\.(?:gif|jpg|png|jpg\.webp)$'
+target = "_"
+action = "REJECT-IMG"
+src = "akiralereal+deezertidal@2026-10-29"
+
+[[rewrite]]
+site = "美团 玲珑推广位"
+pattern = '^https?://(?:s3plus|flowplus)\.meituan\.net/v\d+/\w+/linglong/\w+\.(?:gif|jpg|mp4)'
+target = "_"
+action = "REJECT-200"
+src = "akiralereal@2026-10-29"
+
+[[rewrite]]
+site = "美团/外卖 营销banner"
+pattern = '^https?://p\d+\.meituan\.net/(?:bizad|wmbanner)/\w+\.jpg'
+target = "_"
+action = "REJECT-IMG"
+src = "akiralereal@2026-10-29"
+
+[[rewrite]]
+site = "美团 开屏图接口/广告弹窗"
+pattern = '^https?://(?:wmapi\.meituan\.com/api/v\d+/startpicture|www\.meituan\.com/api/v\d+/appstatus\?ad|peisongapi\.meituan\.com/client/getInitiateImage)'
+target = "_"
+action = "REJECT-DICT"
+src = "deezertidal-startingad@2026-10-29"
+
+# —— 腾讯系（QQ音乐开屏、QQ 埋点）——
+[[rewrite]]
+site = "QQ音乐 开屏图接口"
+pattern = '^https?://c\.y\.qq\.com/splcloud/fcgi-bin/fcg_get_starting_page_songs'
+target = "_"
+action = "REJECT-DICT"
+src = "handpick(社区通用端点)@2026-10-29"
+
+[[rewrite]]
+site = "QQ 系埋点上报"
+pattern = '^https://otheve\.beacon\.qq\.com/analytics/upload\?sid=.*'
+target = "_"
+action = "REJECT-DICT"
+src = "deezertidal-startingad@2026-10-29"
+
+# —— 网易系（邮箱大师内嵌广告；网易云开屏/横幅扩展）——
+[[rewrite]]
+site = "网易邮箱大师 内嵌广告"
+pattern = '^https?://client\.mail\.163\.com/apptrack/confinfo/(?:searchMultiAds\.do|showAds\.do)'
+target = "_"
+action = "REJECT-DICT"
+src = "deezertidal-startingad@2026-10-29"
+
+[[rewrite]]
+site = "网易云音乐 开屏/信息流广告扩展"
+pattern = '^https?://interface(?:3)?\.music\.163\.com/e?api/(?:ad/(?:loading/(?:get|current)|get)|link/(?:position|scene)/show/resource)(?:\?|$)'
+target = "_"
+action = "REJECT-DICT"
+src = "akiralereal@2026-10-29"
+
+# —— B站补充（漫画开屏；主开屏见上）——
+[[rewrite]]
+site = "哔哩哔哩漫画 开屏"
+pattern = '^https?://manga\.bilibili\.com/twirp/comic\.v\d+\.Comic/Flash(?:\?|$)'
+target = "_"
+action = "REJECT-DICT"
+src = "akiralereal@2026-10-29"
+
+# MITM 只登记 hostname：产物永远不含 ca-p12/ca-passphrase（CI 断言强制），
+# 设备上请用自己的证书（Shadowrocket“HTTPS 解密”页生成）。
+[mitm]
+hosts = [
+  # huijingfei 原有
+  "*.alicdn.com", "*.taou.com", "*.58.com", "cloud.video.taobao.com",
+  "m5.amap.com", "api.m.jd.com", "*.360buyimg.com", "www.tianxibook.com",
+  "interface.music.163.com", "app.bilibili.com", "api.zhihu.com",
+  "acs.m.goofish.com",
+  # 家族精选新增
+  "acs.m.taobao.com", "guide-acs.m.taobao.com",
+  "*.meituan.net", "www.meituan.com",
+  "*.xiaohongshu.com",
+  "*.weibo.cn", "*.weibo.com",
+  "*.elemecdn.com", "elemecdn.com",
+  "c.y.qq.com", "*.y.qq.com",
+  "client.mail.163.com",
+  "manga.bilibili.com",
+  "beacon.qq.com", "otheve.beacon.qq.com",
+]
