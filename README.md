@@ -46,9 +46,15 @@ python -m unittest discover -s tests -q
 - [Johnshall/Shadowrocket-ADBlock-Rules-Forever](https://github.com/Johnshall/Shadowrocket-ADBlock-Rules-Forever)（CC BY-SA 4.0，仅取 ad_only 段）
 - [privacy-protection-tools/anti-AD](https://github.com/privacy-protection-tools/anti-AD)（MIT）
 - [TG-Twilight/AWAvenue-Ads-Rule](https://github.com/TG-Twilight/AWAvenue-Ads-Rule)（GPL-3.0，秋风 AWAvenue）
-- [huijingfei/Shadowrocket-Rules](https://github.com/huijingfei/Shadowrocket-Rules)（无许可证：仅收录 [Rule] 段与开屏改写并全程注明出处；作者如有异议，提 issue 即剔除）
+- [huijingfei/Shadowrocket-Rules](https://github.com/huijingfei/ShadowRocket-Rules)（无许可证：仅收录 [Rule] 段与开屏改写并全程注明出处；作者如有异议，提 issue 即剔除）
+- [akiralereal/shadowrocket-toolkit](https://github.com/akiralereal/shadowrocket-toolkit)（GPL-3.0）与 [deezertidal/shadowrocket-rules](https://github.com/deezertidal/shadowrocket-rules)：开屏/内嵌 API 改写条目按出处人工精选钉版引用（每条在 `config/rewrite.toml` 标注 src 与日期）
 
-本仓库代码与管线按 GPL-3.0 发布（LICENSE 待补全文）；规则内容版权归各上游所有，仅供个人学习使用。
+## 已验证覆盖的常用 App 家族（2026-10-29）
+
+微博系 / 小红书系 / 阿里系（淘宝、闲鱼、1688、淘宝闪购·饿了么、大麦、飞猪、淘票票）/ 腾讯系（QQ、微信、QQ音乐）/ bilibili（含漫画）/ 网易系（邮箱大师、有道、网易云音乐）/ 美团系（美团、外卖、猫眼）。
+每个家族的**核心服务域**全部在 DIRECT 放行区并有金丝雀锁（被任何源拦截即阻止发布），**广告接口/素材域**按域名级 REJECT + API 级改写（开屏、弹窗、营销图、埋点）双层处理。误杀反馈走 issue。
+
+本仓库代码与管线按 GPL-3.0 发布；规则内容版权归各上游所有，仅供个人学习使用。
 
 ## 免责声明
 
