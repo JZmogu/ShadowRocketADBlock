@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["config/**", "src/**", "main.py"]
+    paths: ["config/**", "src/**", "main.py", ".github/workflows/build.yml"]
 
 permissions:
   contents: write
@@ -28,13 +28,23 @@ jobs:
           set -e
           git config user.name "adkit-bot"
           git config user.email "adkit-bot@users.noreply.github.com"
+          # stable/ 通道归 release.yml（周二）管：日更只动 latest/。
+          # 先把旧 dist 分支的 stable 存下来（orphan 重建会清工作区）。
+          mkdir -p /tmp/keep
+          if git rev-parse --verify -q origin/dist >/dev/null; then
+            git show origin/dist:stable/adkit.conf > /tmp/keep/stable.conf || true
+          fi
           git checkout --orphan dist-publish
           git rm -rfq . || true
           mkdir -p stable latest
-          cp dist/stable/adkit.conf stable/adkit.conf
           cp dist/latest/adkit.conf latest/adkit.conf
           cp dist/adkit-adonly.conf adkit-adonly.conf
           cp dist/stats.json stats.json
+          if [ -s /tmp/keep/stable.conf ]; then
+            cp /tmp/keep/stable.conf stable/adkit.conf        # 保持周二钉版
+          else
+            cp dist/stable/adkit.conf stable/adkit.conf       # 首次 bootstrap
+          fi
           git add -A
           git commit -m "build $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git branch -M dist
