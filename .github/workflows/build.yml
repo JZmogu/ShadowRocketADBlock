@@ -41,6 +41,7 @@ jobs:
           cp dist/latest/adkit.conf latest/adkit.conf
           cp dist/adkit-adonly.conf adkit-adonly.conf
           cp dist/stats.json stats.json
+          cp dist/stable/adkit.conf pending-stable.conf          # 本轮"stable 链接内容"版，周二由 release.yml 转正
           if [ -s /tmp/keep/stable.conf ]; then
             cp /tmp/keep/stable.conf stable/adkit.conf        # 保持周二钉版
           else
