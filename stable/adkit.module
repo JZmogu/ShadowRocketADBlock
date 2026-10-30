@@ -3,7 +3,7 @@
 
 # ShadowRocketADBlock —— adkit 自动构建产物，请勿手改
 # 白名单: config/whitelist.txt | 开屏改写: config/rewrite.toml | 源开关: config/sources.toml
-# 构建(UTC): 2026-10-30T06:31:26Z | adkit v0.1
+# 构建(UTC): 2026-10-30T07:24:46Z | adkit v0.1
 # 源: johnshall(CC-BY-SA-4.0) + antiad(MIT) + awavenue(GPL-3.0) + huijingfei(无许可证（已按出处收录，作者异议即剔除）)
 # 本文件不含任何 CA/私钥：[MITM] 仅 hostname 清单，HTTPS 解密使用你设备自己的证书
 
@@ -106725,149 +106725,6 @@ DOMAIN-SUFFIX,zzyanhushi.com,REJECT
 DOMAIN-SUFFIX,zzybrnbumgxif.space,REJECT
 DOMAIN-SUFFIX,zzzmjfixezere.site,REJECT
 DOMAIN-SUFFIX,zzzmxvoxooaat.site,REJECT
-IP-CIDR,101.227.14.80/29,REJECT,no-resolve
-IP-CIDR,101.227.200.0/22,REJECT,no-resolve
-IP-CIDR,109.239.140.0/24,REJECT,no-resolve
-IP-CIDR,112.13.64.0/22,REJECT,no-resolve
-IP-CIDR,112.253.36.0/24,REJECT,no-resolve
-IP-CIDR,117.139.16.0/22,REJECT,no-resolve
-IP-CIDR,117.139.18.141/22,REJECT,no-resolve
-IP-CIDR,119.188.13.32/29,REJECT,no-resolve
-IP-CIDR,119.188.172.192/28,REJECT,no-resolve
-IP-CIDR,119.188.173.0/27,REJECT,no-resolve
-IP-CIDR,119.188.43.61/32,REJECT,no-resolve
-IP-CIDR,123.125.116.0/22,REJECT,no-resolve
-IP-CIDR,123.125.117.0/22,REJECT,no-resolve
-IP-CIDR,123.130.122.128/28,REJECT,no-resolve
-IP-CIDR,141.98.82.232/32,REJECT,no-resolve
-IP-CIDR,149.154.160.0/20,REJECT,no-resolve
-IP-CIDR,154.7.80.158/32,REJECT,no-resolve
-IP-CIDR,157.90.183.248/32,REJECT,no-resolve
-IP-CIDR,162.252.214.4/32,REJECT,no-resolve
-IP-CIDR,167.206.10.148/32,REJECT,no-resolve
-IP-CIDR,167.71.252.38/32,REJECT,no-resolve
-IP-CIDR,167.99.31.227/32,REJECT,no-resolve
-IP-CIDR,172.255.103.118/32,REJECT,no-resolve
-IP-CIDR,172.255.6.135/32,REJECT,no-resolve
-IP-CIDR,172.255.6.137/32,REJECT,no-resolve
-IP-CIDR,172.255.6.139/32,REJECT,no-resolve
-IP-CIDR,172.255.6.140/32,REJECT,no-resolve
-IP-CIDR,172.255.6.150/32,REJECT,no-resolve
-IP-CIDR,172.255.6.152/32,REJECT,no-resolve
-IP-CIDR,172.255.6.199/32,REJECT,no-resolve
-IP-CIDR,172.255.6.2/32,REJECT,no-resolve
-IP-CIDR,172.255.6.217/32,REJECT,no-resolve
-IP-CIDR,172.255.6.228/32,REJECT,no-resolve
-IP-CIDR,172.255.6.248/32,REJECT,no-resolve
-IP-CIDR,172.255.6.252/32,REJECT,no-resolve
-IP-CIDR,172.255.6.254/32,REJECT,no-resolve
-IP-CIDR,172.255.6.59/32,REJECT,no-resolve
-IP-CIDR,174.123.15.43/32,REJECT,no-resolve
-IP-CIDR,183.221.244.0/22,REJECT,no-resolve
-IP-CIDR,183.221.247.189/22,REJECT,no-resolve
-IP-CIDR,185.149.120.173/32,REJECT,no-resolve
-IP-CIDR,185.76.151.0/24,REJECT,no-resolve
-IP-CIDR,188.42.84.110/32,REJECT,no-resolve
-IP-CIDR,188.42.84.137/32,REJECT,no-resolve
-IP-CIDR,188.42.84.159/32,REJECT,no-resolve
-IP-CIDR,188.42.84.160/32,REJECT,no-resolve
-IP-CIDR,188.42.84.162/32,REJECT,no-resolve
-IP-CIDR,188.42.84.21/32,REJECT,no-resolve
-IP-CIDR,188.42.84.23/32,REJECT,no-resolve
-IP-CIDR,194.26.232.61/32,REJECT,no-resolve
-IP-CIDR,194.59.220.161/32,REJECT,no-resolve
-IP-CIDR,2001:67c:4e8::/48,REJECT,no-resolve
-IP-CIDR,2001:b28:f23c::/48,REJECT,no-resolve
-IP-CIDR,2001:b28:f23d::/48,REJECT,no-resolve
-IP-CIDR,2001:b28:f23f::/48,REJECT,no-resolve
-IP-CIDR,203.195.121.0/32,REJECT,no-resolve
-IP-CIDR,203.195.121.1/32,REJECT,no-resolve
-IP-CIDR,203.195.121.103/32,REJECT,no-resolve
-IP-CIDR,203.195.121.11/32,REJECT,no-resolve
-IP-CIDR,203.195.121.119/32,REJECT,no-resolve
-IP-CIDR,203.195.121.134/32,REJECT,no-resolve
-IP-CIDR,203.195.121.184/32,REJECT,no-resolve
-IP-CIDR,203.195.121.195/32,REJECT,no-resolve
-IP-CIDR,203.195.121.209/32,REJECT,no-resolve
-IP-CIDR,203.195.121.217/32,REJECT,no-resolve
-IP-CIDR,203.195.121.219/32,REJECT,no-resolve
-IP-CIDR,203.195.121.224/32,REJECT,no-resolve
-IP-CIDR,203.195.121.229/32,REJECT,no-resolve
-IP-CIDR,203.195.121.24/32,REJECT,no-resolve
-IP-CIDR,203.195.121.28/32,REJECT,no-resolve
-IP-CIDR,203.195.121.29/32,REJECT,no-resolve
-IP-CIDR,203.195.121.34/32,REJECT,no-resolve
-IP-CIDR,203.195.121.36/32,REJECT,no-resolve
-IP-CIDR,203.195.121.40/32,REJECT,no-resolve
-IP-CIDR,203.195.121.46/32,REJECT,no-resolve
-IP-CIDR,203.195.121.70/32,REJECT,no-resolve
-IP-CIDR,203.195.121.72/32,REJECT,no-resolve
-IP-CIDR,203.195.121.73/32,REJECT,no-resolve
-IP-CIDR,203.195.121.74/32,REJECT,no-resolve
-IP-CIDR,205.209.138.102/32,REJECT,no-resolve
-IP-CIDR,212.117.186.252/32,REJECT,no-resolve
-IP-CIDR,23.109.121.125/32,REJECT,no-resolve
-IP-CIDR,23.109.121.254/32,REJECT,no-resolve
-IP-CIDR,23.109.150.208/32,REJECT,no-resolve
-IP-CIDR,23.109.150.253/32,REJECT,no-resolve
-IP-CIDR,23.109.170.19/32,REJECT,no-resolve
-IP-CIDR,23.109.170.212/32,REJECT,no-resolve
-IP-CIDR,23.109.170.228/32,REJECT,no-resolve
-IP-CIDR,23.109.170.241/32,REJECT,no-resolve
-IP-CIDR,23.109.170.255/32,REJECT,no-resolve
-IP-CIDR,23.109.170.60/32,REJECT,no-resolve
-IP-CIDR,23.109.248.125/32,REJECT,no-resolve
-IP-CIDR,23.109.248.129/32,REJECT,no-resolve
-IP-CIDR,23.109.248.130/32,REJECT,no-resolve
-IP-CIDR,23.109.248.135/32,REJECT,no-resolve
-IP-CIDR,23.109.248.139/32,REJECT,no-resolve
-IP-CIDR,23.109.248.14/32,REJECT,no-resolve
-IP-CIDR,23.109.248.149/32,REJECT,no-resolve
-IP-CIDR,23.109.248.174/32,REJECT,no-resolve
-IP-CIDR,23.109.248.183/32,REJECT,no-resolve
-IP-CIDR,23.109.248.20/32,REJECT,no-resolve
-IP-CIDR,23.109.248.229/32,REJECT,no-resolve
-IP-CIDR,23.109.248.247/32,REJECT,no-resolve
-IP-CIDR,23.109.248.29/32,REJECT,no-resolve
-IP-CIDR,23.109.87.123/32,REJECT,no-resolve
-IP-CIDR,23.195.91.195/32,REJECT,no-resolve
-IP-CIDR,23.231.151.252/32,REJECT,no-resolve
-IP-CIDR,23.83.67.164/32,REJECT,no-resolve
-IP-CIDR,27.221.89.128/28,REJECT,no-resolve
-IP-CIDR,2a0a:f280::/32,REJECT,no-resolve
-IP-CIDR,34.102.137.201/32,REJECT,no-resolve
-IP-CIDR,35.227.234.222/32,REJECT,no-resolve
-IP-CIDR,35.232.188.118/32,REJECT,no-resolve
-IP-CIDR,37.1.209.213/32,REJECT,no-resolve
-IP-CIDR,37.1.213.100/32,REJECT,no-resolve
-IP-CIDR,5.61.55.143/32,REJECT,no-resolve
-IP-CIDR,51.77.227.100/32,REJECT,no-resolve
-IP-CIDR,51.77.227.101/32,REJECT,no-resolve
-IP-CIDR,51.77.227.102/32,REJECT,no-resolve
-IP-CIDR,51.77.227.103/32,REJECT,no-resolve
-IP-CIDR,51.77.227.96/32,REJECT,no-resolve
-IP-CIDR,51.77.227.97/32,REJECT,no-resolve
-IP-CIDR,51.77.227.98/32,REJECT,no-resolve
-IP-CIDR,51.77.227.99/32,REJECT,no-resolve
-IP-CIDR,51.89.187.136/32,REJECT,no-resolve
-IP-CIDR,51.89.187.137/32,REJECT,no-resolve
-IP-CIDR,51.89.187.138/32,REJECT,no-resolve
-IP-CIDR,51.89.187.139/32,REJECT,no-resolve
-IP-CIDR,51.89.187.140/32,REJECT,no-resolve
-IP-CIDR,51.89.187.141/32,REJECT,no-resolve
-IP-CIDR,51.89.187.142/32,REJECT,no-resolve
-IP-CIDR,51.89.187.143/32,REJECT,no-resolve
-IP-CIDR,60.190.139.164/32,REJECT,no-resolve
-IP-CIDR,60.211.171.128/29,REJECT,no-resolve
-IP-CIDR,60.211.211.1/32,REJECT,no-resolve
-IP-CIDR,88.42.84.136/32,REJECT,no-resolve
-IP-CIDR,91.105.192.0/23,REJECT,no-resolve
-IP-CIDR,91.108.12.0/22,REJECT,no-resolve
-IP-CIDR,91.108.16.0/22,REJECT,no-resolve
-IP-CIDR,91.108.20.0/22,REJECT,no-resolve
-IP-CIDR,91.108.4.0/22,REJECT,no-resolve
-IP-CIDR,91.108.56.0/22,REJECT,no-resolve
-IP-CIDR,91.108.8.0/22,REJECT,no-resolve
 
 # ==== 上游精选放行（DIRECT 兜底：上面未拦截的国内常用域直连，省代理流量）====
 DOMAIN-KEYWORD,litetaobao-app,DIRECT
@@ -107720,7 +107577,6 @@ IP-CIDR,106.11.232.227/24,DIRECT,no-resolve
 IP-CIDR,106.117.244.221/24,DIRECT,no-resolve
 IP-CIDR,114.112.207.0/24,DIRECT,no-resolve
 IP-CIDR,114.112.210.39/32,DIRECT,no-resolve
-IP-CIDR,119.29.29.98/16,DIRECT,no-resolve
 IP-CIDR,120.52.30.130/32,DIRECT,no-resolve
 IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
 IP-CIDR,157.148.59.148/24,DIRECT,no-resolve
@@ -107736,9 +107592,7 @@ IP-CIDR,218.12.78.229/32,DIRECT,no-resolve
 IP-CIDR,221.194.182.251/32,DIRECT,no-resolve
 IP-CIDR,221.195.21.50/32,DIRECT,no-resolve
 IP-CIDR,221.195.63.237/32,DIRECT,no-resolve
-IP-CIDR,39.106.248.141/16,DIRECT,no-resolve
 IP-CIDR,45.137.181.197/32,DIRECT,no-resolve
-IP-CIDR,47.246.64.110/16,DIRECT,no-resolve
 IP-CIDR,59.82.120.217/32,DIRECT,no-resolve
 IP-CIDR,59.82.121.55/32,DIRECT,no-resolve
 IP-CIDR,59.82.122.165/32,DIRECT,no-resolve
@@ -107747,7 +107601,6 @@ IP-CIDR,61.182.130.252/24,DIRECT,no-resolve
 IP-CIDR,61.182.131.252/24,DIRECT,no-resolve
 
 [URL Rewrite]
-^https?:\/\/(www\.)?(g\.cn|google\.cn)\/?$ https://www.google.com 307
 ^https:\/\/www\.tianxibook\.com\/public\/\d{6}\.js$ _ REJECT-DICT
 ^https?:\/\/interface\.music\.163\.com\/eapi\/ad\/config\/get _ REJECT
 ^https?:\/\/m\.360buyimg\.com\/mobilecms\/s1125 _ REJECT-200
@@ -107787,10 +107640,14 @@ IP-CIDR,61.182.131.252/24,DIRECT,no-resolve
 ^https?://p\d+\.meituan\.net/(?:bizad|wmbanner)/\w+\.jpg _ REJECT-IMG
 ^https?://(?:wmapi\.meituan\.com/api/v\d+/startpicture|www\.meituan\.com/api/v\d+/appstatus\?ad|peisongapi\.meituan\.com/client/getInitiateImage) _ REJECT-DICT
 ^https?://c\.y\.qq\.com/splcloud/fcgi-bin/fcg_get_starting_page_songs _ REJECT-DICT
+^https?://r\.inews\.qq\.com/(adsBlacklist|getFullScreenPic|getQQNewsRemoteConfig) _ REJECT-DICT
+^https?://r\.inews\.qq\.com/(getBannerAds|getNewsRemoteConfig|getSplash|searchHotCatList|upLoadLoc) _ REJECT-DICT
+^https?://mp\.weixin\.qq\.com/mp/cps_product_info _ REJECT
 ^https://otheve\.beacon\.qq\.com/analytics/upload\?sid=.* _ REJECT-DICT
+^https?://appconf\.mail\.163\.com/mmad/get\.do _ REJECT-DICT
 ^https?://client\.mail\.163\.com/apptrack/confinfo/(?:searchMultiAds\.do|showAds\.do) _ REJECT-DICT
 ^https?://interface(?:3)?\.music\.163\.com/e?api/(?:ad/(?:loading/(?:get|current)|get)|link/(?:position|scene)/show/resource)(?:\?|$) _ REJECT-DICT
 ^https?://manga\.bilibili\.com/twirp/comic\.v\d+\.Comic/Flash(?:\?|$) _ REJECT-DICT
 
 [MITM]
-hostname = %APPEND% *.360buyimg.com,*.58.com,*.alicdn.com,*.elemecdn.com,*.meituan.net,*.taou.com,*.weibo.cn,*.weibo.com,*.xiaohongshu.com,*.y.qq.com,acs.m.goofish.com,acs.m.taobao.com,api.m.jd.com,api.zhihu.com,app.bilibili.com,beacon.qq.com,c.y.qq.com,client.mail.163.com,cloud.video.taobao.com,elemecdn.com,guide-acs.m.taobao.com,interface.music.163.com,m5.amap.com,manga.bilibili.com,otheve.beacon.qq.com,www.meituan.com,www.tianxibook.com
+hostname = %APPEND% *.360buyimg.com,*.58.com,*.alicdn.com,*.elemecdn.com,*.meituan.net,*.taou.com,*.weibo.cn,*.weibo.com,*.xiaohongshu.com,*.y.qq.com,acs.m.goofish.com,acs.m.taobao.com,api.m.jd.com,api.zhihu.com,app.bilibili.com,appconf.mail.163.com,beacon.qq.com,c.y.qq.com,client.mail.163.com,cloud.video.taobao.com,elemecdn.com,guide-acs.m.taobao.com,interface.music.163.com,interface3.music.163.com,m5.amap.com,manga.bilibili.com,mp.weixin.qq.com,otheve.beacon.qq.com,peisongapi.meituan.com,r.inews.qq.com,wmapi.meituan.com,www.meituan.com,www.tianxibook.com
