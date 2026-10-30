@@ -1,21 +1,21 @@
 {
- "built_utc": "2026-10-30T07:24:46Z",
+ "built_utc": "2026-10-30T10:57:57Z",
  "per_source": {
   "johnshall": 51134,
   "antiad": 100686,
   "awavenue": 976,
-  "huijingfei": 1293,
+  "huijingfei": 1278,
   "user": 1
  },
  "skipped_lines": {
   "johnshall": 0,
   "antiad": 0,
   "awavenue": 0,
-  "huijingfei": 82,
+  "huijingfei": 97,
   "user": 0
  },
- "absorbed": 1537,
- "total_rendered": 107586,
+ "absorbed": 1062,
+ "total_rendered": 108061,
  "whitelist": 0,
  "rewrites": 47,
  "mitm_hosts": 33,
@@ -24,6 +24,19 @@
   "violations": []
  },
  "warnings": [
-  "IP 消毒：剔除 146 条上游 IP 规则（REJECT-IP 整段 / DIRECT 过宽笔误段）"
- ]
+  "IP 过滤：剔除 131 条 IP 拦截或过宽公网 DIRECT 规则"
+ ],
+ "url_canary": {
+  "size": 9,
+  "violations": []
+ },
+ "quality_passed": true,
+ "input_sha256": {
+  "johnshall": "59e52c100213e7a6b61c54617dcb479511e6a2d0faa2de96649c07199e50aff3",
+  "antiad": "8d36968ae38f3bbf8e2ed6dda061293430250676a575832887ba094c54d19cf4",
+  "awavenue": "d4e2ac925d4b6c9d5034ae2dbda2c3f2b30b9ef86b89e6d752eb90335ff11125",
+  "huijingfei": "a3830edd7021bb92ef36705f48b521daa0efbd2a38561947619baa9362a5b292",
+  "user": "e7ace154f010e3eed4f7a5e7b1e8291340d9286e794eb4b4028c379274eb5d02"
+ },
+ "source_commit": "1780844bebf74b0f5af5841d44895394f27b8822"
 }
