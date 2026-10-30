@@ -129,6 +129,87 @@ class RenderTest(unittest.TestCase):
         self.assertIn("hostname = %APPEND% *.a.com", out)
         quality.scrub_assert(out)
 
+    def test_screen_ip_rules(self):
+        # 上游越界 IP 规则必须被消毒（johnshall 用 IP-CIDR 封 Telegram 全段 / 上游 /16 笔误放行整片云）
+        tg = Rule("IP-CIDR", "91.108.56.0/22", "REJECT", ["johnshall"])
+        typo = Rule("IP-CIDR", "119.29.29.98/16", "DIRECT", ["huijingfei"])
+        priv = Rule("IP-CIDR", "10.0.0.0/8", "DIRECT", ["huijingfei"])
+        fine = Rule("IP-CIDR", "221.194.182.251/32", "DIRECT", ["huijingfei"])
+        v6wide = Rule("IP-CIDR", "2001:4800::/12", "DIRECT", ["johnshall"])
+        dom = Rule("DOMAIN-SUFFIX", "ads.example.com", "REJECT", ["x"])
+        kept, dropped = merge.screen([tg, typo, priv, fine, v6wide, dom])
+        self.assertEqual(dropped, 3)                       # tg段 + /16笔误 + v6大段
+        keys = [r.key() for r in kept]
+        self.assertIn(priv.key(), keys)
+        self.assertIn(fine.key(), keys)
+        self.assertIn(dom.key(), keys)
+
+    def test_rewrite_hosts_covered_by_mitm(self):
+        """防呆回归（wmapi/interface3 事故类）：每条启用改写 pattern 的代表主机
+        必须被 [MITM] hostname 覆盖——漏配 hostname 的改写就是静默死条目。"""
+        import re
+        import tomllib
+        import pathlib as pl
+        cfg = pl.Path(__file__).resolve().parents[1] / "config" / "rewrite.toml"
+        rw = tomllib.loads(cfg.read_text("utf-8"))
+        hosts = [h.lower() for h in rw["mitm"]["hosts"]]
+        SL = "\x01"
+
+        def candidates(pattern):
+            s = pattern.replace("\\/", SL)
+            if s.startswith("^"):
+                s = s[1:]
+            i = s.find(SL + SL)
+            if i < 0:
+                return []
+            h = s[i + 2:].split(SL)[0].split(":")[0]
+            br = [h]
+            for _ in range(10):
+                new = []
+                for b in br:
+                    m = re.search(r"\(\?:([^()|]*)\)", b)
+                    if m:
+                        new += [b[:m.start()] + a + b[m.end():] for a in m.group(1).split("|")]
+                        continue
+                    m = re.search(r"\(([^()|]*)\)\??", b)
+                    if m:
+                        new.append(b[:m.start()] + b[m.end():])
+                        new.append(b[:m.start()] + m.group(1) + b[m.end():])
+                        continue
+                    m = re.search(r"[a-z0-9]\?(?![a-z])", b)
+                    if m:
+                        new.append(b[:m.start()] + b[m.start() + 1:])
+                        new.append(b[:m.start()] + b[m.start()] + b[m.start() + 2:])
+                        continue
+                    new.append(b)
+                if new == br:
+                    break
+                br = new
+            out = []
+            for b in br:
+                b = re.sub(r"\\d\+", "0", b)
+                b = re.sub(r"\\w\+", "x", b)
+                b = re.sub(r"\\[wd]\b(?=[^.])", "x", b)     # \w 单字符（i\w/ 之类）
+                b = re.sub(r"\[a-z\]\+", "ab", b)
+                b = re.sub(r"[A-Za-z]\+", "", b)            # 残留裸 w+ 之类
+                b = b.replace("\\.", ".").replace("\\", "").replace("$", "")
+                b = re.sub(r"[()\[\]|]", "", b).rstrip("?+*")
+                if b and re.match(r"^[a-z0-9.\-]+$", b.lower()):
+                    out.append(b.lower())
+            return out
+
+        def hm_match(host, hm):
+            if hm.startswith("*."):
+                return host.endswith("." + hm[2:])
+            return host == hm
+
+        for w in rw.get("rewrite", []):
+            if not w.get("enabled", True):
+                continue
+            for c in candidates(w["pattern"]):
+                self.assertTrue(any(hm_match(c, hm) for hm in hosts),
+                                f"改写 {w['site']!r} 主机 {c} 未被 MITM hostname 覆盖（死条目）")
+
 
 if __name__ == "__main__":
     unittest.main()

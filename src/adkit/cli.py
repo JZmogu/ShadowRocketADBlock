@@ -55,6 +55,10 @@ def build_rules(cfg, rw, live: bool, only_ids=None):
         all_rules.extend(urules)
         per["user"] = len(urules)
         skipped["user"] = usk
+    # IP 规则消毒：上游 REJECT-IP 整段剔除（含封 Telegram 网段等越界内容），DIRECT 弃过宽段
+    all_rules, ip_dropped = merge.screen(all_rules)
+    if ip_dropped:
+        warns.append(f"IP 消毒：剔除 {ip_dropped} 条上游 IP 规则（REJECT-IP 整段 / DIRECT 过宽笔误段）")
     merged = merge.dedup(all_rules)
     merged, absorbed = merge.absorb(merged)
     wl_rules = []
