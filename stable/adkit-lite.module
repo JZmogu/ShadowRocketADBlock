@@ -1,11 +1,11 @@
 #!name=去广告-开屏改写
-#!desc=开屏/内嵌 API 改写+MITM 域名。需配合「规则」页的 adkit-adonly.conf 一起用
+#!desc=URL 改写；需另外加载域名规则
 
 # ShadowRocketADBlock —— adkit 自动构建产物，请勿手改
 # 白名单: config/whitelist.txt | 开屏改写: config/rewrite.toml | 源开关: config/sources.toml
-# 构建(UTC): 2026-10-30T07:24:46Z | adkit v0.1
-# 源: johnshall(CC-BY-SA-4.0) + antiad(MIT) + awavenue(GPL-3.0) + huijingfei(无许可证（已按出处收录，作者异议即剔除）)
-# 本文件不含任何 CA/私钥：[MITM] 仅 hostname 清单，HTTPS 解密使用你设备自己的证书
+# 构建(UTC): 2026-10-30T10:57:57Z | adkit v0.1
+# 规则出处及许可: johnshall (CC-BY-SA-4.0); antiad (MIT); awavenue (GPL-3.0); huijingfei (无许可证（已按出处收录，作者异议即剔除）)
+# 本文件不含任何 CA/私钥；HTTPS 解密使用当前配置中你自己的证书
 
 [URL Rewrite]
 ^https:\/\/www\.tianxibook\.com\/public\/\d{6}\.js$ _ REJECT-DICT
@@ -16,8 +16,8 @@
 ^https?:\/\/m5\.amap\.com\/ws\/(feature\/preheat\/bootevent|shield\/dsp\/app\/startup\/init|valueadded\/alimama\/splash_screen) _ REJECT-DICT
 ^https?:\/\/api\.m\.jd\.com\/client\.action\?functionId=(lite_advertising|homeAreaPop) _ REJECT
 ^https?:\/\/(img\w|kjimg10)\.360buyimg\.com\/(pop|mcmktresadmin)\/jfs\/([\w\W]*)\.(jpg|png|heic|webp|avif) _ REJECT-200
-^https?:\/\/ossgw\.alicdn\.com\/creatives-assets\/(image|prod)\/([\w\W]*).(jpg|png|heic|webp) _ REJECT-200
-^https?:\/\/cloud\.video\.taobao\.com\/vod\/([\w\W]*).mp4 _ REJECT-200
+^https?:\/\/ossgw\.alicdn\.com\/creatives-assets\/(image|prod)\/([^?#]*)\.(jpg|png|heic|webp)(?:[?#]|$) _ REJECT-200
+^https?:\/\/cloud\.video\.taobao\.com\/vod\/([^?#]*)\.mp4(?:[?#]|$) _ REJECT-200
 ^https?:\/\/cloud\.video\.taobao\.com\/.*alimama.*\.mp4 _ REJECT-VIDEO
 ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlecommerce\.splash _ REJECT-DICT
 ^https?:\/\/acs\.m\.goofish\.com\/gw\/mtop\.idle\.idleadv\.(.*) _ REJECT-DICT
@@ -57,4 +57,5 @@
 ^https?://manga\.bilibili\.com/twirp/comic\.v\d+\.Comic/Flash(?:\?|$) _ REJECT-DICT
 
 [MITM]
+enable = true
 hostname = %APPEND% *.360buyimg.com,*.58.com,*.alicdn.com,*.elemecdn.com,*.meituan.net,*.taou.com,*.weibo.cn,*.weibo.com,*.xiaohongshu.com,*.y.qq.com,acs.m.goofish.com,acs.m.taobao.com,api.m.jd.com,api.zhihu.com,app.bilibili.com,appconf.mail.163.com,beacon.qq.com,c.y.qq.com,client.mail.163.com,cloud.video.taobao.com,elemecdn.com,guide-acs.m.taobao.com,interface.music.163.com,interface3.music.163.com,m5.amap.com,manga.bilibili.com,mp.weixin.qq.com,otheve.beacon.qq.com,peisongapi.meituan.com,r.inews.qq.com,wmapi.meituan.com,www.meituan.com,www.tianxibook.com
