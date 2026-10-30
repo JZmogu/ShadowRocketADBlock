@@ -1,0 +1,29 @@
+{
+ "built_utc": "2026-10-30T07:24:46Z",
+ "per_source": {
+  "johnshall": 51134,
+  "antiad": 100686,
+  "awavenue": 976,
+  "huijingfei": 1293,
+  "user": 1
+ },
+ "skipped_lines": {
+  "johnshall": 0,
+  "antiad": 0,
+  "awavenue": 0,
+  "huijingfei": 82,
+  "user": 0
+ },
+ "absorbed": 1537,
+ "total_rendered": 107586,
+ "whitelist": 0,
+ "rewrites": 47,
+ "mitm_hosts": 33,
+ "canary": {
+  "size": 59,
+  "violations": []
+ },
+ "warnings": [
+  "IP 消毒：剔除 146 条上游 IP 规则（REJECT-IP 整段 / DIRECT 过宽笔误段）"
+ ]
+}

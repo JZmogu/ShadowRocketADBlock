@@ -1,0 +1,57 @@
+#!name=去广告-开屏改写
+#!desc=开屏/内嵌 API 改写+MITM 域名。需配合「规则」页的 adkit-adonly.conf 一起用
+
+# ShadowRocketADBlock —— adkit 自动构建产物，请勿手改
+# 白名单: config/whitelist.txt | 开屏改写: config/rewrite.toml | 源开关: config/sources.toml
+# 构建(UTC): 2026-10-30T06:31:26Z | adkit v0.1
+# 源: johnshall(CC-BY-SA-4.0) + antiad(MIT) + awavenue(GPL-3.0) + huijingfei(无许可证（已按出处收录，作者异议即剔除）)
+# 本文件不含任何 CA/私钥：[MITM] 仅 hostname 清单，HTTPS 解密使用你设备自己的证书
+
+[URL Rewrite]
+^https?:\/\/(www\.)?(g\.cn|google\.cn)\/?$ https://www.google.com 307
+^https:\/\/www\.tianxibook\.com\/public\/\d{6}\.js$ _ REJECT-DICT
+^https?:\/\/interface\.music\.163\.com\/eapi\/ad\/config\/get _ REJECT
+^https?:\/\/m\.360buyimg\.com\/mobilecms\/s1125 _ REJECT-200
+^https?:\/\/api\.zhihu\.com\/commercial_api\/(real_time_)?launch_v2\? _ REJECT-DICT
+^https?:\/\/app\.bilibili\.com\/x\/v2\/splash\/(event\/list|brand\/list|show|list) _ REJECT-DICT
+^https?:\/\/m5\.amap\.com\/ws\/(feature\/preheat\/bootevent|shield\/dsp\/app\/startup\/init|valueadded\/alimama\/splash_screen) _ REJECT-DICT
+^https?:\/\/api\.m\.jd\.com\/client\.action\?functionId=(lite_advertising|homeAreaPop) _ REJECT
+^https?:\/\/(img\w|kjimg10)\.360buyimg\.com\/(pop|mcmktresadmin)\/jfs\/([\w\W]*)\.(jpg|png|heic|webp|avif) _ REJECT-200
+^https?:\/\/ossgw\.alicdn\.com\/creatives-assets\/(image|prod)\/([\w\W]*).(jpg|png|heic|webp) _ REJECT-200
+^https?:\/\/cloud\.video\.taobao\.com\/vod\/([\w\W]*).mp4 _ REJECT-200
+^https?:\/\/cloud\.video\.taobao\.com\/.*alimama.*\.mp4 _ REJECT-VIDEO
+^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlecommerce\.splash _ REJECT-DICT
+^https?:\/\/acs\.m\.goofish\.com\/gw\/mtop\.idle\.idleadv\.(.*) _ REJECT-DICT
+^https?:\/\/img\.alicdn\.com\/imgextra\/i\w\/([\w\W]*)-at([\w\W]*)\.(jpg|png|heic|webp) _ REJECT-200
+^https?:\/\/(gw|heic|img)\.alicdn\.com\/imgextra\/i\w\/([\w\W]*)(1080-|1125-2436|1350|-1602|-1950|-2339|-2436|-2208|1170-2532)([\w\W]*)\.(jpg|png|heic|webp) _ REJECT-200
+^https?:\/\/app\.58\.com\/api\/home\/appadv\/splashscreenadv _ REJECT-DICT
+^https?:\/\/open\.taou\.com\/maimai\/adshow _ REJECT
+^https?://guide-acs\.m\.taobao\.com/gw/mtop\.taobao\.wireless\.home\.splash\.awesome\.get(?:/|\?|$) _ REJECT-200
+^https?://acs\.m\.taobao\.com/gw/mtop\.alibaba\.advertisementservice\.getadv/ _ REJECT-200
+^https?://acs\.m\.taobao\.com/gw/mtop\.alibaba\.cbu\.app\.homepage\.startup(?:/|\?|$) _ REJECT-200
+^https?://acs\.m\.taobao\.com/gw/mtop\.damai\.(?:wireless\.home\.welcome|mec\.popup\.get)(?:/|\?|$) _ REJECT-200
+^https?://acs\.m\.taobao\.com/gw/mtop\.fliggy\.crm\.screen\.(?:allresource|availablesplashstrategies)(?:/|\?|$) _ REJECT-200
+^https?://elemecdn\.com/.+/sitemap(?:\?|$) _ REJECT-200
+^https://gw\.alicdn\.com/(?:tfs|tps)/.+\d{3,4}-\d{4} _ REJECT-200
+^https?://(?:open\.taou\.com/maimai/launch_ad|api\.taou\.com/sdk/global/splash_ad|track\.mm\.taou\.com/v\d+/track) _ REJECT-DICT
+^https://acs\.m\.taobao\.com/gw/mtop\.film\.mtopadvertiseapi\.queryadvertise/5\.0.* _ REJECT-DICT
+^https?://api\.weibo\.cn/\d+/ad/preload(?:\?|$) _ REJECT-DICT
+^https?://boot\.biz\.weibo\.com/v\d+/ad/(?:preload|realtime)(?:\?|$) _ REJECT-DICT
+^https?://m?api\.weibo\.(?:cn|com)/\d+/ad/weibointl\? _ REJECT-DICT
+^https?://[a-z]+\.xiaohongshu\.com/api/sns/v\d+/system_service/splash(?:\?|$) _ REJECT-DICT
+^https?://[a-z]+\.xiaohongshu\.com/api/sns/v\d+/(?:tag/)?ads(?:\?|$) _ REJECT-DICT
+^https?://edith\.xiaohongshu\.com/api/sns/v\d+/search/notes/recommend_info\? _ REJECT-DICT
+^https?://www\.xiaohongshu\.com/api/sns/v\d+/(?:tag/ads_engage|ads/apple/record|ads/resource) _ REJECT-DICT
+^https?://referee\.xiaohongshu\.com/v\d+/stateReport _ REJECT-DICT
+^https?://img\.meituan\.net/(?:adunion|display|midas|bizad|brandCpt)/\w+\.(?:gif|jpg|png|jpg\.webp)$ _ REJECT-IMG
+^https?://(?:s3plus|flowplus)\.meituan\.net/v\d+/\w+/linglong/\w+\.(?:gif|jpg|mp4) _ REJECT-200
+^https?://p\d+\.meituan\.net/(?:bizad|wmbanner)/\w+\.jpg _ REJECT-IMG
+^https?://(?:wmapi\.meituan\.com/api/v\d+/startpicture|www\.meituan\.com/api/v\d+/appstatus\?ad|peisongapi\.meituan\.com/client/getInitiateImage) _ REJECT-DICT
+^https?://c\.y\.qq\.com/splcloud/fcgi-bin/fcg_get_starting_page_songs _ REJECT-DICT
+^https://otheve\.beacon\.qq\.com/analytics/upload\?sid=.* _ REJECT-DICT
+^https?://client\.mail\.163\.com/apptrack/confinfo/(?:searchMultiAds\.do|showAds\.do) _ REJECT-DICT
+^https?://interface(?:3)?\.music\.163\.com/e?api/(?:ad/(?:loading/(?:get|current)|get)|link/(?:position|scene)/show/resource)(?:\?|$) _ REJECT-DICT
+^https?://manga\.bilibili\.com/twirp/comic\.v\d+\.Comic/Flash(?:\?|$) _ REJECT-DICT
+
+[MITM]
+hostname = %APPEND% *.360buyimg.com,*.58.com,*.alicdn.com,*.elemecdn.com,*.meituan.net,*.taou.com,*.weibo.cn,*.weibo.com,*.xiaohongshu.com,*.y.qq.com,acs.m.goofish.com,acs.m.taobao.com,api.m.jd.com,api.zhihu.com,app.bilibili.com,beacon.qq.com,c.y.qq.com,client.mail.163.com,cloud.video.taobao.com,elemecdn.com,guide-acs.m.taobao.com,interface.music.163.com,m5.amap.com,manga.bilibili.com,otheve.beacon.qq.com,www.meituan.com,www.tianxibook.com
