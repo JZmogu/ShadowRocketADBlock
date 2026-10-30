@@ -1,10 +1,7 @@
-# ==== 自备增补规则：用户反馈→直接加行，次日构建生效 ====
-# 语法 = Shadowrocket 完整规则行（type,pattern,action[,no-resolve]），例如：
-#   DOMAIN-SUFFIX,ads.example.com,REJECT
-#   DOMAIN,ad.api.example.cn,REJECT-DICT
-#   DOMAIN-SUFFIX,shop.example.com,DIRECT      ← 需要强制放行也在这一层（会排进最高优先级区）
-# 注意：URL 级改写（API 路径拦截）不在这里加，去 config/rewrite.toml 登记。
-# 这些规则与上游源平等参与去重/吸收，并同样受金丝雀质检约束（误杀核心域会被阻止发布）。
+# 自定义域名/IP规则，语法：type,pattern,action[,no-resolve]
+# 例如 DOMAIN-SUFFIX,ads.example.com,REJECT
+# DIRECT 例外参与优先级处理，域名金丝雀与 URL 检查仍会执行。
+# URL 路径改写在 config/rewrite.toml 中登记。
 
-# 微博 广告素材 API（2026-10-30 用户 SR 日志抓到的漏网，四源均未收录）
+# 微博广告素材 API：来自 2026-10-30 已登记的用户请求日志。
 DOMAIN-SUFFIX,mediadata.api.weibo.com,REJECT

@@ -1,5 +1,6 @@
 # 个人白名单（DOMAIN-SUFFIX 语义，渲染为 DIRECT，永远排第一）。
-# 发现误杀：把域名加到这里，提 issue 或直接 commit，下次构建永久生效。
+# 域名规则误杀可在这里添加例外，下次成功构建发布后生效。
+# 这里只控制域名路由；URL 改写误杀请修改 config/rewrite.toml。
 # 示例（都取消 # 即生效）：
 # some-false-positive.com
 # sub.example.com

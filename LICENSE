@@ -1,7 +1,7 @@
 本项目的管线代码（src/、main.py、.github/、tests/）以 GNU GPL-3.0 许可证发布，
 全文见 <https://www.gnu.org/licenses/gpl-3.0.txt>。
 
-聚合的规则内容版权归各上游源所有：
+规则内容版权归各上游作者所有：
 - Johnshall/Shadowrocket-ADBlock-Rules-Forever：CC BY-SA 4.0
 - privacy-protection-tools/anti-AD：MIT
 - TG-Twilight/AWAvenue-Ads-Rule：GPL-3.0

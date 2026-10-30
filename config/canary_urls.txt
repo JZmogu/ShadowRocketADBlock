@@ -1,0 +1,10 @@
+# 代表性正常请求；覆盖 URL-REGEX 和人工 URL 改写，不代表所有路径均已验证。
+https://qq.com/
+https://weixin.qq.com/
+https://app.bilibili.com/x/v2/account/myinfo
+https://api.zhihu.com/me
+https://www.meituan.com/
+https://wmapi.meituan.com/api/v1/user/info
+https://interface3.music.163.com/eapi/song/detail
+https://acs.m.goofish.com/gw/mtop.taobao.idle.user.info
+https://api.weibo.cn/2/account/get_uid

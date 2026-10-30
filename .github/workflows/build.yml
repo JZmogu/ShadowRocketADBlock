@@ -1,64 +1,47 @@
 name: build
-# 每日 09:00（北京）自动构建 → 推 dist 分支（latest 通道即刻生效，stable 通道不动）
 on:
   schedule:
-    - cron: "0 1 * * *" # UTC 01:00 = 北京 09:00
+    - cron: "0 1 * * *" # 每日北京时间 09:00
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["config/**", "src/**", "main.py", ".github/workflows/build.yml"]
+    paths: ["config/**", "src/**", "tests/**", "scripts/**", "main.py", ".github/workflows/**"]
+  pull_request:
+    paths: ["config/**", "src/**", "tests/**", "scripts/**", "main.py", ".github/workflows/**"]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: unit tests
+      - name: unit and publish integration tests
         run: python -m unittest discover -s tests -q
-      - name: build (quality gates inside)
+      - name: offline build
+        run: python main.py build --offline
+
+  publish:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: adkit-dist-publish
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: restore last successful state
+        run: python scripts/publish.py restore
+      - name: build with quality gates
         run: python main.py build
-      - name: publish to dist branch
-        run: |
-          set -e
-          git config user.name "adkit-bot"
-          git config user.email "adkit-bot@users.noreply.github.com"
-          # stable/ 通道归 release.yml（周二）管：日更只动 latest/。
-          # 先把旧 dist 分支的 stable 存下来（orphan 重建会清工作区；checkout 默认不带 dist ref，需显式 fetch）。
-          mkdir -p /tmp/keep
-          git fetch --depth=1 origin +refs/heads/dist:refs/remotes/origin/dist || true
-          if git rev-parse --verify -q origin/dist >/dev/null; then
-            git show origin/dist:stable/adkit.conf > /tmp/keep/stable.conf || true
-            git show origin/dist:stable/adkit.module > /tmp/keep/stable.module || true
-            git show origin/dist:stable/adkit-lite.module > /tmp/keep/stable.lite || true
-          fi
-          git checkout --orphan dist-publish
-          git rm -rfq --cached . || true          # 只清空索引（orphan 下全部文件都是 staged，git rm 会拒绝直接删）
-          mkdir -p stable latest
-          cp dist/latest/adkit.conf latest/adkit.conf
-          cp dist/latest/adkit.module latest/adkit.module
-          cp dist/latest/adkit-lite.module latest/adkit-lite.module
-          cp dist/adkit-adonly.conf adkit-adonly.conf
-          cp dist/stats.json stats.json
-          cp dist/stable/adkit.conf pending-stable.conf          # 本轮"stable 链接内容"版，周二由 release.yml 转正
-          cp dist/stable/adkit.module pending-stable.module
-          cp dist/stable/adkit-lite.module pending-stable-lite.module
-          if [ -s /tmp/keep/stable.conf ] && [ -s /tmp/keep/stable.module ]; then
-            cp /tmp/keep/stable.conf stable/adkit.conf          # 保持周二钉版
-            cp /tmp/keep/stable.module stable/adkit.module
-            if [ -s /tmp/keep/stable.lite ]; then cp /tmp/keep/stable.lite stable/adkit-lite.module; else cp dist/stable/adkit-lite.module stable/adkit-lite.module; fi
-          else
-            cp dist/stable/adkit.conf stable/adkit.conf         # 首次 bootstrap
-            cp dist/stable/adkit.module stable/adkit.module
-            cp dist/stable/adkit-lite.module stable/adkit-lite.module
-          fi
-          git add stable latest pending-stable.conf pending-stable.module pending-stable-lite.module adkit-adonly.conf stats.json   # 显式路径，绝不 -A（防混入源码/cache）
-          git commit -m "build $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git branch -M dist
-          git push -f origin dist
-      # 任一步失败（含质量门退出码≠0）都不会执行 publish：dist 分支自动 keep-last-good
+      - name: publish latest and preserve stable
+        run: python scripts/publish.py publish

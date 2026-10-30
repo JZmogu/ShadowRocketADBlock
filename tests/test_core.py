@@ -61,7 +61,7 @@ class MergeTest(unittest.TestCase):
         out, dropped = merge.absorb(rs)
         kept = {(r.type, r.pattern) for r in out}
         self.assertEqual(kept, {("DOMAIN-SUFFIX", "x.com"), ("DOMAIN-SUFFIX", "a.x.com")})
-        self.assertEqual(dropped, 2)
+        self.assertEqual(dropped, 1)  # 保留跨动作首条匹配语义
 
     def test_parent_before_child_lexorder(self):
         rs = [Rule("DOMAIN-SUFFIX", "ab.b.com", "REJECT", ["s"]), Rule("DOMAIN-SUFFIX", "b.com", "REJECT", ["s"])]

@@ -1,67 +1,40 @@
-"""L1 精确去重 + L2 吸收（子域⊂父域、DOMAIN⊂DOMAIN-SUFFIX），只在同动作内吸收。
-   另有 IP 规则消毒层：上游 IP 段大量越界（johnshall 整段 REJECT Telegram 网段）或笔误（/16 放行整片云）。"""
+"""L1 精确去重 + L2 吸收（子域⊂父域、DOMAIN⊂DOMAIN-SUFFIX），只在同动作内吸收。"""
 from __future__ import annotations
+
+import ipaddress
 
 from .ir import DOMAIN, Rule, SUFFIX
 
 SPECIAL_TLD = set()  # 防误伤名单：如将来需要，禁止把这些 TLD 的二级吸收发生
 
 IP_TYPES = ("IP-CIDR", "IP-CIDR6")
-
-
-def _private_v4(ip: str) -> bool:
-    a = ip.split(".")
-    try:
-        if a[0] in ("10", "127"):
-            return True
-        if a[0] == "192" and a[1] == "168":
-            return True
-        if a[0] == "169" and a[1] == "254":
-            return True
-        if a[0] == "172" and 16 <= int(a[1]) <= 31:
-            return True
-    except (ValueError, IndexError):
-        pass
-    return False
-
-
-def _priv_or_fine_v6(r) -> bool:
-    """v6 规则：上游几乎全写成 IP-CIDR（应属 IP-CIDR6），按实际内容判定：
-    ULA(fc00::/7)/loopback 私有保留；其余一律按"细粒度 ≥/48 的白名单才保留，大段弃"。"""
-    ip, _, mask = r.pattern.partition("/")
-    low = ip.lower()
-    if low.startswith(("fc", "fd", "fe80", "::1")):
-        return True
-    try:
-        return int(mask or 128) >= 48
-    except ValueError:
-        return False
+LOCAL_NETWORKS = tuple(ipaddress.ip_network(n) for n in (
+    "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "127.0.0.0/8", "169.254.0.0/16",
+    "fc00::/7", "fe80::/10", "::1/128",
+))
 
 
 def screen(rules):
-    """IP 规则消毒：
-    - REJECT* IP 规则整段丢弃：上游 IP 段目的混杂（johnshall 用 IP-CIDR 封 Telegram 全段、
-      失效广告服务器 IP 等），对开屏/内嵌广告（全部走域名 API）无收益，误伤风险极大。
-    - DIRECT IP 规则：保留私有网段（保护性直连）与细粒度（v4 掩码 ≥/24；v6 语义错乱的
-      大段如 2001:4800::/12,DIRECT 直接弃）的放行；丢弃过宽公网大段
-      （如 119.29.29.98/16 —— 上游笔误，/24 写成了 /16，放行整片腾讯云）。"""
-    keep, dropped = [], 0
-    for r in rules:
-        if r.type in IP_TYPES:
-            if r.is_reject():
+    """保留现有发布策略：剔除 IP 拦截与过宽公网 DIRECT 网段。"""
+    kept, dropped = [], 0
+    for rule in rules:
+        if "user" in rule.sources:
+            kept.append(rule)
+            continue
+        if rule.type in IP_TYPES:
+            try:
+                network = ipaddress.ip_network(rule.pattern, strict=False)
+            except ValueError:
                 dropped += 1
                 continue
-            if r.action == "DIRECT":
-                ip, _, mask = r.pattern.partition("/")
-                if ":" in ip:  # 含冒号即 v6（上游常错写为 IP-CIDR）
-                    if not _priv_or_fine_v6(r):
-                        dropped += 1
-                        continue
-                elif not _private_v4(ip) and int(mask or 32) < 24:
-                    dropped += 1
-                    continue
-        keep.append(r)
-    return keep, dropped
+            local = any(network.version == private.version and network.subnet_of(private)
+                        for private in LOCAL_NETWORKS)
+            if rule.is_reject() or (rule.action == "DIRECT" and not local and
+                                   network.prefixlen < (24 if network.version == 4 else 48)):
+                dropped += 1
+                continue
+        kept.append(rule)
+    return kept, dropped
 
 
 def dedup(rules):
@@ -80,13 +53,36 @@ def dedup(rules):
 
 def absorb(rules):
     """L2 吸收：同动作组内，子域 SUFFIX ⊂ 已保留父域 SUFFIX；DOMAIN ⊂ 同名/祖先 SUFFIX。
-    按域名层级升序处理（祖先必先到），祖先链查表，整体 O(n×层数)。"""
+    相交域有其他动作时保留规则，避免删除后改变 first-match 的有效动作。
+    祖先索引的构造与查询为 O(n×层数)，另有各动作组内的排序。"""
     drop = set()
     groups = {}
+    suffix_actions, exact_actions, descendant_actions = {}, {}, {}
     for r in rules:
         if r.is_reject() or r.action == "DIRECT":
             if r.type in (DOMAIN, SUFFIX) and r.pattern not in SPECIAL_TLD:
                 groups.setdefault(r.action, []).append(r)
+                index = suffix_actions if r.type == SUFFIX else exact_actions
+                index.setdefault(r.pattern, set()).add(r.action)
+                ancestor = r.pattern
+                while True:
+                    descendant_actions.setdefault(ancestor, set()).add(r.action)
+                    if "." not in ancestor:
+                        break
+                    ancestor = ancestor.split(".", 1)[1]
+
+    def conflicting_action(rule):
+        # DOMAIN 只覆盖自身，SUFFIX 还覆盖所有后代。祖先 SUFFIX 同样相交。
+        local = descendant_actions if rule.type == SUFFIX else exact_actions
+        if local.get(rule.pattern, set()) - {rule.action}:
+            return True
+        ancestor = rule.pattern
+        while True:
+            if suffix_actions.get(ancestor, set()) - {rule.action}:
+                return True
+            if "." not in ancestor:
+                return False
+            ancestor = ancestor.split(".", 1)[1]
     for _, rs in groups.items():
         sfx = sorted(
             {r.pattern for r in rs if r.type == SUFFIX and "." in r.pattern},
@@ -123,6 +119,8 @@ def absorb(rules):
                     return True
 
         for r in rs:
+            if "whitelist" in r.sources or conflicting_action(r):
+                continue
             if r.type == SUFFIX and r.pattern in covered:
                 drop.add(r.key())
             elif r.type == DOMAIN and "." in r.pattern and covered_by_suffix(r.pattern):

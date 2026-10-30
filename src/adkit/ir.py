@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import re
+import ipaddress
 from dataclasses import dataclass, field
+from urllib.parse import urlsplit
 
 DOMAIN = "DOMAIN"
 SUFFIX = "DOMAIN-SUFFIX"
@@ -27,7 +29,7 @@ class Rule:
         return self.action.startswith("REJECT")
 
     def match_domain(self, host: str) -> bool:
-        h = host.lower().strip(".")
+        h = host.strip().lower().strip(".")
         if self.type == DOMAIN:
             return h == self.pattern
         if self.type == SUFFIX:
@@ -36,6 +38,20 @@ class Rule:
             return self.pattern in h
         return False
 
+    def match_ip(self, address: str) -> bool:
+        if self.type not in (IPCIDR, "IP-CIDR6"):
+            return False
+        try:
+            return ipaddress.ip_address(address) in ipaddress.ip_network(self.pattern, strict=False)
+        except ValueError:
+            return False
+
+    def match_url(self, url: str) -> bool:
+        if self.type == URLREGEX:
+            return re.search(self.pattern, url) is not None
+        host = urlsplit(url).hostname or ""
+        return self.match_domain(host) or self.match_ip(host)
+
 
 def norm_domain(d: str) -> str:
     d = d.strip().lower().rstrip(".").lstrip("*").lstrip(".")
@@ -43,4 +59,8 @@ def norm_domain(d: str) -> str:
 
 
 def domain_sane(d: str) -> bool:
-    return bool(d) and bool(_DOMAIN_RE.match(d)) and ".." not in d and not d.startswith(".")
+    return (
+        bool(d) and len(d) <= 253 and bool(_DOMAIN_RE.fullmatch(d))
+        and all(0 < len(label) <= 63 and not label.startswith("-") and not label.endswith("-")
+                for label in d.split("."))
+    )

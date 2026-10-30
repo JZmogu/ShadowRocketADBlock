@@ -3,12 +3,16 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import hashlib
 import json
+import os
 import pathlib
+import re
 import tomllib
+from urllib.parse import urlsplit
 
 from . import fetch, merge, quality, render
-from .ir import Rule, norm_domain, SUFFIX
+from .ir import Rule, domain_sane, norm_domain, SUFFIX
 from .parsers import PARSERS
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -21,6 +25,21 @@ def load_cfg():
         cfg = tomllib.load(f)
     with open(CFG / "rewrite.toml", "rb") as f:
         rw = tomllib.load(f)
+    ids = []
+    for source in cfg.get("sources", []):
+        sid = source.get("id", "")
+        if not re.fullmatch(r"[A-Za-z0-9_-]+", sid) or sid in ids:
+            raise ValueError(f"来源 id 无效或重复: {sid!r}")
+        ids.append(sid)
+        if source.get("parser") not in PARSERS:
+            raise ValueError(f"[{sid}] 未知解析器")
+        if not isinstance(source.get("min_rules", 1), int) or source.get("min_rules", 1) < 1:
+            raise ValueError(f"[{sid}] min_rules 必须为正整数")
+        deviation = source.get("max_deviation", 0.4)
+        if not isinstance(deviation, (int, float)) or not 0 < deviation <= 1:
+            raise ValueError(f"[{sid}] max_deviation 必须在 (0, 1] 范围")
+    if not any(s.get("enabled", True) for s in cfg.get("sources", [])):
+        raise ValueError("没有启用的规则来源")
     return cfg, rw
 
 
@@ -33,14 +52,64 @@ def load_list(path: pathlib.Path):
     return out
 
 
-def build_rules(cfg, rw, live: bool, only_ids=None):
-    texts = fetch.load_sources(cfg, ROOT / "cache", ROOT / "snapshots", live=live, only_ids=only_ids)
+def domain_list(path):
+    domains = [norm_domain(d) for d in load_list(path)]
+    for domain in domains:
+        if not domain_sane(domain):
+            raise ValueError(f"{path.name} 中的域名无效: {domain!r}")
+    return list(dict.fromkeys(domains))
+
+
+def url_canaries():
+    path = CFG / "canary_urls.txt"
+    urls = load_list(path) if path.exists() else []
+    for url in urls:
+        parsed = urlsplit(url)
+        if parsed.scheme not in ("http", "https") or not parsed.hostname:
+            raise ValueError(f"canary_urls.txt 中的 URL 无效: {url!r}")
+    return urls
+
+
+def build_rules(cfg, rw, live: bool, only_ids=None, pending=None, source_hashes=None,
+                check_canaries=True):
+    enabled_ids = {s["id"] for s in cfg["sources"] if s.get("enabled", True)}
+    if only_ids and set(only_ids) - enabled_ids:
+        raise ValueError(f"--only 包含未知或停用来源: {sorted(set(only_ids) - enabled_ids)}")
+    wl_rules = [Rule(SUFFIX, d, "DIRECT", ["whitelist"]) for d in domain_list(CFG / "whitelist.txt")]
+    user_rules, user_skipped, user_text = [], 0, None
+    user_path = CFG / "user_rules.txt"
+    if user_path.exists():
+        user_text = user_path.read_text("utf-8")
+        user_rules, user_skipped = PARSERS["sr_conf_rule"](user_text, "user")
+        if user_skipped:
+            raise ValueError(f"user_rules.txt 有 {user_skipped} 条无效规则，请修正后构建")
+        for rule in user_rules:
+            if rule.action == "DIRECT":
+                rule.sources.append("whitelist")
+    direct = wl_rules + [r for r in user_rules if r.action == "DIRECT"]
+    canaries = domain_list(CFG / "canary.txt")
+    urls = url_canaries()
+
+    def validate_source(source, text):
+        if not check_canaries:
+            return
+        source_rules, _ = PARSERS[source["parser"]](text, source["id"])
+        bad = quality.canary_check(direct + source_rules, canaries)
+        url_bad = quality.url_canary_check(direct + source_rules, [], urls)
+        if bad or url_bad:
+            details = [f"{d}: {r.type},{r.pattern},{r.action}" for d, r in bad]
+            raise ValueError("金丝雀失败: " + "; ".join((details + url_bad)[:5]))
+
+    texts = fetch.load_sources(cfg, ROOT / "cache", ROOT / "snapshots", live=live,
+                               only_ids=only_ids, pending=pending, validate=validate_source)
     all_rules, per, skipped, warns = [], {}, {}, []
+    missing = []
     for sid, text, warn in texts:
         src = next(s for s in cfg["sources"] if s["id"] == sid)
         if text is None:
             per[sid] = 0
             warns.append(f"[{sid}] 源完全失败（无快照可用）: {warn}")
+            missing.append(sid)
             continue
         if warn:
             warns.append(f"[{sid}] {warn}")
@@ -48,74 +117,82 @@ def build_rules(cfg, rw, live: bool, only_ids=None):
         all_rules.extend(rules)
         per[sid] = len(rules)
         skipped[sid] = sk
-    # 自备增补规则（用户反馈直加；SR 完整规则行语法；参与去重/吸收/金丝雀质检）
-    ur_path = CFG / "user_rules.txt"
-    if ur_path.exists():
-        urules, usk = PARSERS["sr_conf_rule"](ur_path.read_text("utf-8", "replace"), "user")
-        all_rules.extend(urules)
-        per["user"] = len(urules)
-        skipped["user"] = usk
-    # IP 规则消毒：上游 REJECT-IP 整段剔除（含封 Telegram 网段等越界内容），DIRECT 弃过宽段
+        if source_hashes is not None:
+            source_hashes[sid] = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    if missing:
+        raise ValueError("缺少有效规则副本，停止构建: " + "; ".join(warns))
+    if user_text is not None:
+        all_rules.extend(user_rules)
+        per["user"] = len(user_rules)
+        skipped["user"] = user_skipped
+        if source_hashes is not None:
+            source_hashes["user"] = hashlib.sha256(user_text.encode()).hexdigest()
     all_rules, ip_dropped = merge.screen(all_rules)
     if ip_dropped:
-        warns.append(f"IP 消毒：剔除 {ip_dropped} 条上游 IP 规则（REJECT-IP 整段 / DIRECT 过宽笔误段）")
+        warns.append(f"IP 过滤：剔除 {ip_dropped} 条 IP 拦截或过宽公网 DIRECT 规则")
     merged = merge.dedup(all_rules)
     merged, absorbed = merge.absorb(merged)
-    wl_rules = []
-    for d in load_list(CFG / "whitelist.txt"):
-        nd = norm_domain(d)
-        if nd:
-            wl_rules.append(Rule(SUFFIX, nd, "DIRECT", ["whitelist"]))
     return wl_rules + merged, per, skipped, absorbed, warns
 
 
 def cmd_build(args):
     cfg, rw = load_cfg()
-    rules, per, skipped, absorbed, warns = build_rules(cfg, rw, live=not args.offline, only_ids=args.only)
+    rewrites = [w for w in rw.get("rewrite", []) if w.get("enabled", True)]
+    mitm_hosts = rw.get("mitm", {}).get("hosts", [])
+    errors = quality.rewrite_check(rewrites, mitm_hosts)
+    if errors:
+        raise ValueError("改写登记表检查失败:\n" + "\n".join(errors))
+    pending, source_hashes = {}, {}
+    rules, per, skipped, absorbed, warns = build_rules(
+        cfg, rw, live=not args.offline, only_ids=args.only, pending=pending,
+        source_hashes=source_hashes, check_canaries=not args.ignore_canary,
+    )
     for w in warns:
         print("警告:", w)
     total = sum(per.values())
-    if total < 5000:
-        print(f"错误：解析总量仅 {total} 条（远低于下限 5000），疑似上游集体异常，拒绝发布")
+    minimum = cfg["meta"].get("min_total_rules", 5000)
+    if total < minimum:
+        print(f"错误：解析总量仅 {total} 条，低于下限 {minimum}，拒绝发布")
         return 2
 
-    canaries = load_list(CFG / "canary.txt")
-    bad = quality.canary_check([r for r in rules if r.is_reject()], canaries)
-    if bad:
-        print(f"错误：canary 金丝雀被 REJECT，共 {len(bad)} 处（金丝雀域名必须放行）：")
+    canaries = domain_list(CFG / "canary.txt")
+    bad = quality.canary_check(rules, canaries)
+    urls = url_canaries()
+    url_bad = quality.url_canary_check(rules, rewrites, urls)
+    if bad or url_bad:
+        print(f"错误：金丝雀检查失败：域名 {len(bad)} 处，URL {len(url_bad)} 处：")
         for d, r in bad[:40]:
             print(f"  ✗ {d} 被规则 [{r.type},{r.pattern},{r.action}]（来源: {'+'.join(r.sources)}）拦截")
+        for detail in url_bad[:40]:
+            print("  ✗", detail)
         if not args.ignore_canary:
-            print("构建终止（keep-last-good：dist 分支保持上一版）。修复：加入 config/whitelist.txt 或禁用肇事源。")
+            print("构建终止，保留已发布版本。域名误拦可调整白名单；URL 误拦需调整对应改写或 URL 规则。")
             return 2
-        print("--ignore-canary 指定，强行继续（不建议！）")
+        print("--ignore-canary：仅生成本地排查产物，不更新有效快照；stats 标记为未通过。")
 
     prev_stats = None
     if (DIST / "stats.json").exists():
         prev_stats = json.loads((DIST / "stats.json").read_text("utf-8"))
         for w in quality.count_deviation(prev_stats, {"per_source": per}):
             print("警告:", w)
+            warns.append(w)
 
-    rewrites = [w for w in rw.get("rewrite", []) if w.get("enabled", True)]
-    mitm_hosts = [h.strip() for h in rw.get("mitm", {}).get("hosts", []) if h.strip()]
     built = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    src_names = " + ".join(s["id"] + "(" + s.get("license", "?") + ")" for s in cfg["sources"] if s.get("enabled", True))
+    src_names = "; ".join(s["id"] + " (" + s.get("license", "?") + ")" for s in cfg["sources"] if s.get("enabled", True))
     header = (
         "# ShadowRocketADBlock —— adkit 自动构建产物，请勿手改\n"
         "# 白名单: config/whitelist.txt | 开屏改写: config/rewrite.toml | 源开关: config/sources.toml\n"
         f"# 构建(UTC): {built} | adkit v0.1\n"
-        f"# 源: {src_names}\n"
-        "# 本文件不含任何 CA/私钥：[MITM] 仅 hostname 清单，HTTPS 解密使用你设备自己的证书"
+        f"# 规则出处及许可: {src_names}\n"
+        "# 本文件不含任何 CA/私钥；HTTPS 解密使用当前配置中你自己的证书"
     )
 
     outs = {
         "stable/adkit.conf": render.render_full_conf(rules, rewrites, mitm_hosts, cfg["meta"]["stable_url"], header),
         "latest/adkit.conf": render.render_full_conf(rules, rewrites, mitm_hosts, cfg["meta"]["latest_url"], header),
         "adkit-adonly.conf": render.render_adonly(rules, header),
-        # 模块通道：叠加进用户现有配置（节点留机场侧），远程模块 URL 本身就是更新通道
         "stable/adkit.module": render.render_module(rules, rewrites, mitm_hosts, header),
         "latest/adkit.module": render.render_module(rules, rewrites, mitm_hosts, header),
-        # 拆分版轻量模块（几 KB）：配合「规则」页远程子规则 adkit-adonly.conf 使用（首选推荐）
         "stable/adkit-lite.module": render.render_lite_module(rewrites, mitm_hosts, header),
         "latest/adkit-lite.module": render.render_lite_module(rewrites, mitm_hosts, header),
     }
@@ -126,7 +203,9 @@ def cmd_build(args):
     for name, text in outs.items():
         p = DIST / name
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(text, "utf-8")
+        temporary = p.with_suffix(".tmp")
+        temporary.write_text(text, "utf-8")
+        temporary.replace(p)
 
     stats = {
         "built_utc": built,
@@ -139,8 +218,14 @@ def cmd_build(args):
         "mitm_hosts": len(mitm_hosts),
         "canary": {"size": len(canaries), "violations": [d for d, _ in bad]},
         "warnings": warns,
+        "url_canary": {"size": len(urls), "violations": url_bad},
+        "quality_passed": not (bad or url_bad),
+        "input_sha256": source_hashes,
+        "source_commit": os.environ.get("GITHUB_SHA"),
     }
     (DIST / "stats.json").write_text(json.dumps(stats, ensure_ascii=False, indent=1), "utf-8")
+    if not args.offline and stats["quality_passed"]:
+        fetch.commit_sources(pending, ROOT / "cache", ROOT / "snapshots")
 
     n_user = sum(1 for r in rules if r.action == "DIRECT" and "whitelist" in r.sources)
     n_updir = sum(1 for r in rules if r.action == "DIRECT" and "whitelist" not in r.sources)
@@ -157,14 +242,25 @@ def cmd_build(args):
 
 def cmd_explain(args):
     cfg, rw = load_cfg()
-    rules, *_ = build_rules(cfg, rw, live=False)
-    host = args.host.lower()
-    hits = [r for r in rules if r.type != "IP-CIDR" and r.match_domain(host)]
+    rules, *_, warns = build_rules(cfg, rw, live=False, check_canaries=False)
+    host = args.host.strip()
+    is_url = host.startswith(("http://", "https://"))
+    hits = [r for r in render.ordered_rules(rules)
+            if (r.match_url(host) if is_url else r.match_domain(host) or r.match_ip(host))]
+    print("本地规则查询；设备上生效的版本和路由模式可能不同。")
     if not hits:
-        print(f"{host}: 无任何规则命中（放行）。")
-    for r in hits:
-        tag = "白名单放行" if r.action == "DIRECT" else "拦截"
+        print(f"{host}: 无路由规则命中，使用客户端默认路由。")
+    for index, r in enumerate(hits):
+        tag = "最终路由匹配" if index == 0 else "被前序规则覆盖"
         print(f"  {tag}: {r.type},{r.pattern},{r.action}  来源: {'+'.join(r.sources)}")
+    if is_url:
+        import re
+        for w in rw.get("rewrite", []):
+            if w.get("enabled", True) and re.search(w["pattern"], host):
+                print(f"  首条 URL 改写: {w['site']} -> {w['action']}；HTTPS 还需解密和证书信任")
+                break
+    else:
+        print("提供完整 http(s) URL 才能查询 URL 正则及人工改写。")
     return 0
 
 
@@ -180,4 +276,8 @@ def main(argv):
     e.add_argument("host")
     e.set_defaults(fn=cmd_explain)
     args = ap.parse_args(argv)
-    return args.fn(args)
+    try:
+        return args.fn(args)
+    except (OSError, ValueError, KeyError) as exc:
+        print(f"错误：{exc}")
+        return 2

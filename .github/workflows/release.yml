@@ -1,10 +1,7 @@
 name: promote-stable
-# 每周二 09:00（北京）把 dist 分支当前（= 最近一次全绿）构建钉成 stable：
-# 1) dist 分支内 latest/ 复制到 stable/ —— 朋友端 update-url 到这一刻才拿到新规则
-# 2) GitHub Release 存档，便于手动回滚
 on:
   schedule:
-    - cron: "0 1 * * 2" # UTC 周二 01:00 = 北京周二 09:00
+    - cron: "0 1 * * 2" # 每周二北京时间 09:00
   workflow_dispatch:
 
 permissions:
@@ -12,30 +9,33 @@ permissions:
 
 jobs:
   promote:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    concurrency:
+      group: adkit-dist-publish
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          ref: dist
-      - name: promote pending -> stable
-        run: |
-          set -e
-          git config user.name "adkit-bot"
-          git config user.email "adkit-bot@users.noreply.github.com"
-          # pending-stable.conf/.module 是最近一次全绿构建渲染的"stable 通道内容"版本；
-          # 绝不能拿 latest/adkit.conf（其 update-url 指向 latest 通道）做 stable。
-          mkdir -p stable
-          cp pending-stable.conf stable/adkit.conf
-          cp pending-stable.module stable/adkit.module
-          cp pending-stable-lite.module stable/adkit-lite.module
-          git add -A
-          git diff --cached --quiet || git commit -m "promote stable $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git push origin dist
+          python-version: "3.12"
+      - name: promote pending to stable
+        id: promotion
+        run: python scripts/publish.py promote
       - name: release snapshot
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_SHA: ${{ steps.promotion.outputs.sha }}
         run: |
-          TAG="stable-$(date +%Y%m%d)"
-          gh release create "$TAG" stable/adkit.conf stable/adkit.module adkit-adonly.conf stats.json \
-            --title "$TAG（每周二钉版）" \
-            --notes "本轮 stable 快照。回滚方法：把设备 SR 里的订阅链接临时切到上一个 Release 的 adkit.conf。" || true
+          set -euo pipefail
+          TAG="stable-${RELEASE_SHA}"
+          ASSETS=(dist/release/stable/adkit.conf dist/release/stable/adkit.module dist/release/stable/adkit-lite.module dist/release/adkit-adonly.conf dist/release/stats.json)
+          # 同一提交的重跑先恢复已有 Release；查询失败会由 create 明确报错。
+          if gh release view "$TAG" --json tagName >/dev/null 2>&1; then
+            gh release upload "$TAG" "${ASSETS[@]}" --clobber
+          else
+            gh release create "$TAG" "${ASSETS[@]}" \
+              --target "$RELEASE_SHA" \
+              --title "$TAG" \
+              --notes "stable 配置与模块快照。附件保留 stable 通道更新地址，可下载后在设备上手动导入回滚。"
+          fi
