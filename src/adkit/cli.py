@@ -48,6 +48,13 @@ def build_rules(cfg, rw, live: bool, only_ids=None):
         all_rules.extend(rules)
         per[sid] = len(rules)
         skipped[sid] = sk
+    # 自备增补规则（用户反馈直加；SR 完整规则行语法；参与去重/吸收/金丝雀质检）
+    ur_path = CFG / "user_rules.txt"
+    if ur_path.exists():
+        urules, usk = PARSERS["sr_conf_rule"](ur_path.read_text("utf-8", "replace"), "user")
+        all_rules.extend(urules)
+        per["user"] = len(urules)
+        skipped["user"] = usk
     merged = merge.dedup(all_rules)
     merged, absorbed = merge.absorb(merged)
     wl_rules = []
