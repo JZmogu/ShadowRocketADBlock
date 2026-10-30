@@ -1,26 +1,33 @@
 # ShadowRocketADBlock（adkit）
 
-Shadowrocket 手机端去广告**一键订阅**：主打 App 开屏广告 + 应用内嵌广告。自动融合多个社区优质规则源，去重合并后由 GitHub Actions 定时构建，**导入一次，之后每周自动更新，不用再碰 GitHub**。
+Shadowrocket 手机端去广告：主打 App 开屏广告 + 应用内嵌广告。自动融合多个社区优质规则源，去重合并后由 GitHub Actions 定时构建，**导入一次，之后自动/每周更新，不用再碰 GitHub**。
 
-> 本项目是规则聚合管线，不生产规则。上游致谢见文末。产物不含任何 CA/私钥，HTTPS 解密使用你设备自己的证书。
+> 本项目是规则聚合管线，不生产规则，**也不处理你的代理节点**（节点信息绝不进入本公开仓库）。上游致谢见文末。产物不含任何 CA/私钥，HTTPS 解密使用你设备自己的证书。
 
-## 一键订阅（两个通道）
+## 用法一（推荐）：模块叠加——你的机场配置照常，去广告一键加上
+
+Shadowrocket 同一时刻只有一份"主配置"。**不要把本仓库的 conf 导入成订阅，否则你的机场节点会被顶掉。**正确姿势：
+
+1. **开 HTTPS 解密并装自己的证书**：Shadowrocket → HTTPS 解密 → 生成根证书 → 安装 → 信任（设置→通用→关于本机→证书信任设置里全部打勾）。本订阅不携带任何证书。
+2. **添加模块**：Shadowrocket → 模块 → 新建/添加 → 粘贴链接：
+   - 你自己（每日自动更新）：`https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/latest/adkit.module`
+   - 朋友用（每周二钉版，稳）：`https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/stable/adkit.module`
+3. 打开模块开关。机场订阅保持原样，节点、策略都不受影响；去广告规则/开屏改写/MITM 由模块叠加进来。
+
+> GitHub 打不开时用镜像导入（仅首次）：`https://cdn.jsdelivr.net/gh/JZmogu/ShadowRocketADBlock@dist/latest/adkit.module`
+> 真机请验证一次：模块开关打开后日志里出现 `REJECT` 命中，且机场节点正常上网。若发现模块规则排在你机场规则之后而未生效（个别旧版 SR 的规则插入位置问题），改用下面的用法二或提 issue。
+
+## 用法二：整份订阅（只有当你不需要代理节点时）
+
+纯直连去广告（手机不需要翻墙，SR 全局选"直连"）时，才把整份配置导入为订阅：
 
 | 通道 | 链接 | 说明 |
 |---|---|---|
 | **stable（推荐给朋友）** | `https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/stable/adkit.conf` | 每周二自动钉版，平时不变，稳 |
 | latest（尝鲜） | `https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/latest/adkit.conf` | 每日自动更新 |
 
-打不开 GitHub 时，导入阶段可用 jsDelivr 镜像（仅用于首次导入；自动更新走上面的正链）：
-`https://cdn.jsdelivr.net/gh/JZmogu/ShadowRocketADBlock@dist/stable/adkit.conf`
-
-## 给朋友的三步（一次性，之后全自动）
-
-1. **开 HTTPS 解密并装自己的证书**：Shadowrocket → HTTPS 解密 → 生成根证书 → 安装 → 信任（设置→通用→关于本机→证书信任设置 里全部打勾）。这一步只影响你自己的设备，本订阅不携带任何证书。
-2. **导入订阅**：Shadowrocket → 配置 → 下载配置 → 粘贴上面的 stable 链接。
-3. **加你自己的节点**：在"订阅"里添加你自己的机场订阅即可，与本配置互不干扰。
-
-之后每周二早上，SR 会通过配置里的 `update-url` 自动检查更新，**无需任何手动操作**。
+之后 SR 通过配置里的 `update-url` 自动检查更新，**无需任何手动操作**。
+另有 `dist/adkit-adonly.conf`（纯 [Rule] 段）可作为"规则"页的远程子规则使用（不含开屏改写/MITM，功能不完整，仅备用）。
 
 ## 发现误杀怎么办
 

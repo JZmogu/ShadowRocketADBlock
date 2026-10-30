@@ -22,10 +22,11 @@ jobs:
           set -e
           git config user.name "adkit-bot"
           git config user.email "adkit-bot@users.noreply.github.com"
-          # pending-stable.conf 是最近一次全绿构建渲染的"update-url 指向 stable 链接"的版本；
+          # pending-stable.conf/.module 是最近一次全绿构建渲染的"stable 通道内容"版本；
           # 绝不能拿 latest/adkit.conf（其 update-url 指向 latest 通道）做 stable。
           mkdir -p stable
           cp pending-stable.conf stable/adkit.conf
+          cp pending-stable.module stable/adkit.module
           git add -A
           git diff --cached --quiet || git commit -m "promote stable $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git push origin dist
@@ -34,6 +35,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="stable-$(date +%Y%m%d)"
-          gh release create "$TAG" stable/adkit.conf adkit-adonly.conf stats.json \
+          gh release create "$TAG" stable/adkit.conf stable/adkit.module adkit-adonly.conf stats.json \
             --title "$TAG（每周二钉版）" \
             --notes "本轮 stable 快照。回滚方法：把设备 SR 里的订阅链接临时切到上一个 Release 的 adkit.conf。" || true

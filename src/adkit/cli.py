@@ -101,6 +101,9 @@ def cmd_build(args):
         "stable/adkit.conf": render.render_full_conf(rules, rewrites, mitm_hosts, cfg["meta"]["stable_url"], header),
         "latest/adkit.conf": render.render_full_conf(rules, rewrites, mitm_hosts, cfg["meta"]["latest_url"], header),
         "adkit-adonly.conf": render.render_adonly(rules, header),
+        # 模块通道：叠加进用户现有配置（节点留机场侧），远程模块 URL 本身就是更新通道
+        "stable/adkit.module": render.render_module(rules, rewrites, mitm_hosts, header),
+        "latest/adkit.module": render.render_module(rules, rewrites, mitm_hosts, header),
     }
     for name, text in outs.items():
         quality.scrub_assert(text)

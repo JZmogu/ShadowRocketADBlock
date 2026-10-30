@@ -45,3 +45,24 @@ def render_full_conf(rules, rewrites, mitm_hosts, update_url, header) -> str:
 def render_adonly(rules, header) -> str:
     lines = [header, "", "[Rule]"] + _rule_lines(rules)
     return "\n".join(lines) + "\n"
+
+
+def render_module(rules, rewrites, mitm_hosts, header) -> str:
+    """SR 模块（.module）：叠加进用户现有配置，不动机场节点——推荐主用法。
+    规则/改写/MITM 三段一次带上；无 [General]/无 update-url（远程模块 URL 本身就是更新通道）。"""
+    lines = [
+        "#!name=去广告 adkit",
+        "#!desc=广告拦截(规则+开屏改写+MITM)。不含节点、不改你已有配置；节点仍归你的机场订阅",
+        "",
+        header,
+        "",
+        "[Rule]",
+    ]
+    lines += _rule_lines(rules)
+    if rewrites:
+        lines += ["", "[URL Rewrite]"]
+        for w in rewrites:
+            lines.append(f'{w["pattern"]} {w["target"]} {w["action"]}')
+    if mitm_hosts:
+        lines += ["", "[MITM]", "hostname = " + ",".join(sorted(mitm_hosts))]
+    return "\n".join(lines) + "\n"

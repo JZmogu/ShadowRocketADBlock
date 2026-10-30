@@ -108,6 +108,20 @@ class RenderTest(unittest.TestCase):
         self.assertNotIn("[General]", out)
         self.assertNotIn("[MITM]", out)
 
+    def test_module_three_sections_no_general(self):
+        rs = [
+            Rule("DOMAIN", "ad.com", "REJECT", ["s"]),
+            Rule("DOMAIN-SUFFIX", "app.cn", "DIRECT", ["upstream"]),
+        ]
+        out = render.render_module(rs, [{"pattern": "^https?://x", "target": "_", "action": "REJECT-DICT"}], ["*.a.com", "b.com"], "# hdr")
+        self.assertIn("#!name=", out)                      # SR 模块头
+        self.assertIn("[Rule]", out)
+        self.assertIn("[URL Rewrite]", out)
+        self.assertIn("hostname = *.a.com,b.com", out)     # 排序后的 hostname
+        self.assertNotIn("[General]", out)                 # 模块绝不带 General/update-url
+        self.assertNotIn("update-url", out)
+        quality.scrub_assert(out)
+
 
 if __name__ == "__main__":
     unittest.main()
