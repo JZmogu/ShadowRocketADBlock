@@ -104,6 +104,9 @@ def cmd_build(args):
         # 模块通道：叠加进用户现有配置（节点留机场侧），远程模块 URL 本身就是更新通道
         "stable/adkit.module": render.render_module(rules, rewrites, mitm_hosts, header),
         "latest/adkit.module": render.render_module(rules, rewrites, mitm_hosts, header),
+        # 拆分版轻量模块（几 KB）：配合「规则」页远程子规则 adkit-adonly.conf 使用（首选推荐）
+        "stable/adkit-lite.module": render.render_lite_module(rewrites, mitm_hosts, header),
+        "latest/adkit-lite.module": render.render_lite_module(rewrites, mitm_hosts, header),
     }
     for name, text in outs.items():
         quality.scrub_assert(text)

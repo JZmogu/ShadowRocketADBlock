@@ -35,24 +35,29 @@ jobs:
           if git rev-parse --verify -q origin/dist >/dev/null; then
             git show origin/dist:stable/adkit.conf > /tmp/keep/stable.conf || true
             git show origin/dist:stable/adkit.module > /tmp/keep/stable.module || true
+            git show origin/dist:stable/adkit-lite.module > /tmp/keep/stable.lite || true
           fi
           git checkout --orphan dist-publish
           git rm -rfq --cached . || true          # 只清空索引（orphan 下全部文件都是 staged，git rm 会拒绝直接删）
           mkdir -p stable latest
           cp dist/latest/adkit.conf latest/adkit.conf
           cp dist/latest/adkit.module latest/adkit.module
+          cp dist/latest/adkit-lite.module latest/adkit-lite.module
           cp dist/adkit-adonly.conf adkit-adonly.conf
           cp dist/stats.json stats.json
           cp dist/stable/adkit.conf pending-stable.conf          # 本轮"stable 链接内容"版，周二由 release.yml 转正
           cp dist/stable/adkit.module pending-stable.module
+          cp dist/stable/adkit-lite.module pending-stable-lite.module
           if [ -s /tmp/keep/stable.conf ] && [ -s /tmp/keep/stable.module ]; then
             cp /tmp/keep/stable.conf stable/adkit.conf          # 保持周二钉版
             cp /tmp/keep/stable.module stable/adkit.module
+            if [ -s /tmp/keep/stable.lite ]; then cp /tmp/keep/stable.lite stable/adkit-lite.module; else cp dist/stable/adkit-lite.module stable/adkit-lite.module; fi
           else
             cp dist/stable/adkit.conf stable/adkit.conf         # 首次 bootstrap
             cp dist/stable/adkit.module stable/adkit.module
+            cp dist/stable/adkit-lite.module stable/adkit-lite.module
           fi
-          git add stable latest pending-stable.conf pending-stable.module adkit-adonly.conf stats.json   # 显式路径，绝不 -A（防混入源码/cache）
+          git add stable latest pending-stable.conf pending-stable.module pending-stable-lite.module adkit-adonly.conf stats.json   # 显式路径，绝不 -A（防混入源码/cache）
           git commit -m "build $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git branch -M dist
           git push -f origin dist

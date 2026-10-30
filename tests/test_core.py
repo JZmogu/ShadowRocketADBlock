@@ -122,6 +122,13 @@ class RenderTest(unittest.TestCase):
         self.assertNotIn("update-url", out)
         quality.scrub_assert(out)
 
+    def test_lite_module_no_rules_section(self):
+        out = render.render_lite_module([{"pattern": "^https?://x", "target": "_", "action": "REJECT-DICT"}], ["*.a.com"], "# hdr")
+        self.assertNotIn("[Rule]", out)                    # 拆分版：大规则走规则页，模块只带 rewrite+MITM
+        self.assertIn("[URL Rewrite]", out)
+        self.assertIn("hostname = *.a.com", out)
+        quality.scrub_assert(out)
+
 
 if __name__ == "__main__":
     unittest.main()

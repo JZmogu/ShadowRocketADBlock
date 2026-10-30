@@ -4,18 +4,22 @@ Shadowrocket 手机端去广告：主打 App 开屏广告 + 应用内嵌广告�
 
 > 本项目是规则聚合管线，不生产规则，**也不处理你的代理节点**（节点信息绝不进入本公开仓库）。上游致谢见文末。产物不含任何 CA/私钥，HTTPS 解密使用你设备自己的证书。
 
-## 用法一（推荐）：模块叠加——你的机场配置照常，去广告一键加上
+## 用法一（推荐）：拆分接入——「规则」页放规则文件 + 「模块」页放开屏改写模块
 
-Shadowrocket 同一时刻只有一份"主配置"。**不要把本仓库的 conf 导入成订阅，否则你的机场节点会被顶掉。**正确姿势：
+Shadowrocket 同一时刻只有一份"主配置"。**不要把本仓库的 conf 导入成订阅，否则你的机场节点会被顶掉。**正确姿势（两处各加一条，机场配置完全不动）：
 
 1. **开 HTTPS 解密并装自己的证书**：Shadowrocket → HTTPS 解密 → 生成根证书 → 安装 → 信任（设置→通用→关于本机→证书信任设置里全部打勾）。本订阅不携带任何证书。
-2. **添加模块**：Shadowrocket → 模块 → 新建/添加 → 粘贴链接：
-   - 你自己（每日自动更新）：`https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/latest/adkit.module`
-   - 朋友用（每周二钉版，稳）：`https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/stable/adkit.module`
-3. 打开模块开关。机场订阅保持原样，节点、策略都不受影响；去广告规则/开屏改写/MITM 由模块叠加进来。
+2. **「规则」页 → 创建规则/远程规则**，粘贴：
+   `https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/adkit-adonly.conf`
+   （约 10.7 万条域名级广告拦截 + 放行兜底，SR 规则页专为大文件设计，自动更新）
+3. **「模块」页 → 添加模块**，粘贴：
+   - 你自己（每日自动更新）：`https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/latest/adkit-lite.module`
+   - 朋友用（每周二钉版，稳）：`https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/stable/adkit-lite.module`
+4. 两处开关都打开。节点、策略、机场订阅不受任何影响。
 
-> GitHub 打不开时用镜像导入（仅首次）：`https://cdn.jsdelivr.net/gh/JZmogu/ShadowRocketADBlock@dist/latest/adkit.module`
-> 真机请验证一次：模块开关打开后日志里出现 `REJECT` 命中，且机场节点正常上网。若发现模块规则排在你机场规则之后而未生效（个别旧版 SR 的规则插入位置问题），改用下面的用法二或提 issue。
+> GitHub 打不开时用 jsDelivr 镜像导入（仅首次，把 `raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/` 换成 `cdn.jsdelivr.net/gh/JZmogu/ShadowRocketADBlock@dist/`）。
+> 一次性替代方案：`latest/adkit.module` / `stable/adkit.module`（规则+改写+MITM 合一的大模块，约 4MB——部分旧版 SR 对超大模块支持不佳，优先用上面的拆分法）。
+> 真机请验证：规则页条数正常显示、模块开关打开后日志出现 `REJECT`、机场节点正常。若个别 SR 版本把模块规则排在主配置规则之后导致不生效，拆分法天然规避（规则页优先级由你手动排序）。
 
 ## 用法二：整份订阅（只有当你不需要代理节点时）
 

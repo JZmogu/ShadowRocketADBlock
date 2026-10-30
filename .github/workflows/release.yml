@@ -27,6 +27,7 @@ jobs:
           mkdir -p stable
           cp pending-stable.conf stable/adkit.conf
           cp pending-stable.module stable/adkit.module
+          cp pending-stable-lite.module stable/adkit-lite.module
           git add -A
           git diff --cached --quiet || git commit -m "promote stable $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git push origin dist

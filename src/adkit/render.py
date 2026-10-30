@@ -66,3 +66,16 @@ def render_module(rules, rewrites, mitm_hosts, header) -> str:
     if mitm_hosts:
         lines += ["", "[MITM]", "hostname = " + ",".join(sorted(mitm_hosts))]
     return "\n".join(lines) + "\n"
+
+
+def render_lite_module(rewrites, mitm_hosts, header) -> str:
+    """拆分用轻量模块：只含 [URL Rewrite]+[MITM]（几 KB）。
+    大规则文件走「规则」页远程子规则（adkit-adonly.conf），避免超大模块导入风险。"""
+    lines = ["#!name=去广告-开屏改写", "#!desc=开屏/内嵌 API 改写+MITM 域名。需配合「规则」页的 adkit-adonly.conf 一起用", "", header]
+    if rewrites:
+        lines += ["", "[URL Rewrite]"]
+        for w in rewrites:
+            lines.append(f'{w["pattern"]} {w["target"]} {w["action"]}')
+    if mitm_hosts:
+        lines += ["", "[MITM]", "hostname = " + ",".join(sorted(mitm_hosts))]
+    return "\n".join(lines) + "\n"
