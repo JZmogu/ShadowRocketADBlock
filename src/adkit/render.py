@@ -64,7 +64,8 @@ def render_module(rules, rewrites, mitm_hosts, header) -> str:
         for w in rewrites:
             lines.append(f'{w["pattern"]} {w["target"]} {w["action"]}')
     if mitm_hosts:
-        lines += ["", "[MITM]", "hostname = " + ",".join(sorted(mitm_hosts))]
+        # %APPEND%：与主配置/其他模块的 hostname 合并而非互相覆盖（SR/Surge 模块机制）
+        lines += ["", "[MITM]", "hostname = %APPEND% " + ",".join(sorted(mitm_hosts))]
     return "\n".join(lines) + "\n"
 
 
@@ -77,5 +78,5 @@ def render_lite_module(rewrites, mitm_hosts, header) -> str:
         for w in rewrites:
             lines.append(f'{w["pattern"]} {w["target"]} {w["action"]}')
     if mitm_hosts:
-        lines += ["", "[MITM]", "hostname = " + ",".join(sorted(mitm_hosts))]
+        lines += ["", "[MITM]", "hostname = %APPEND% " + ",".join(sorted(mitm_hosts))]
     return "\n".join(lines) + "\n"

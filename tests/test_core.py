@@ -117,7 +117,7 @@ class RenderTest(unittest.TestCase):
         self.assertIn("#!name=", out)                      # SR 模块头
         self.assertIn("[Rule]", out)
         self.assertIn("[URL Rewrite]", out)
-        self.assertIn("hostname = *.a.com,b.com", out)     # 排序后的 hostname
+        self.assertIn("hostname = %APPEND% *.a.com,b.com", out)  # 模块必须 %APPEND%，防互相覆盖
         self.assertNotIn("[General]", out)                 # 模块绝不带 General/update-url
         self.assertNotIn("update-url", out)
         quality.scrub_assert(out)
@@ -126,7 +126,7 @@ class RenderTest(unittest.TestCase):
         out = render.render_lite_module([{"pattern": "^https?://x", "target": "_", "action": "REJECT-DICT"}], ["*.a.com"], "# hdr")
         self.assertNotIn("[Rule]", out)                    # 拆分版：大规则走规则页，模块只带 rewrite+MITM
         self.assertIn("[URL Rewrite]", out)
-        self.assertIn("hostname = *.a.com", out)
+        self.assertIn("hostname = %APPEND% *.a.com", out)
         quality.scrub_assert(out)
 
 

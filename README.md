@@ -4,22 +4,18 @@ Shadowrocket 手机端去广告：主打 App 开屏广告 + 应用内嵌广告�
 
 > 本项目是规则聚合管线，不生产规则，**也不处理你的代理节点**（节点信息绝不进入本公开仓库）。上游致谢见文末。产物不含任何 CA/私钥，HTTPS 解密使用你设备自己的证书。
 
-## 用法一（推荐）：拆分接入——「规则」页放规则文件 + 「模块」页放开屏改写模块
+## 用法一（推荐）：一个模块搞定——你的机场配置照常，去广告一键加上
 
-Shadowrocket 同一时刻只有一份"主配置"。**不要把本仓库的 conf 导入成订阅，否则你的机场节点会被顶掉。**正确姿势（两处各加一条，机场配置完全不动）：
+Shadowrocket 同一时刻只有一份"主配置"。**不要把本仓库的 conf 导入成订阅，否则你的机场节点会被顶掉。**正确姿势只有一步：
 
-1. **开 HTTPS 解密并装自己的证书**：Shadowrocket → HTTPS 解密 → 生成根证书 → 安装 → 信任（设置→通用→关于本机→证书信任设置里全部打勾）。本订阅不携带任何证书。
-2. **「规则」页 → 创建规则/远程规则**，粘贴：
-   `https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/adkit-adonly.conf`
-   （约 10.7 万条域名级广告拦截 + 放行兜底，SR 规则页专为大文件设计，自动更新）
-3. **「模块」页 → 添加模块**，粘贴：
-   - 你自己（每日自动更新）：`https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/latest/adkit-lite.module`
-   - 朋友用（每周二钉版，稳）：`https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/stable/adkit-lite.module`
-4. 两处开关都打开。节点、策略、机场订阅不受任何影响。
+1. **开 HTTPS 解密并装自己的证书**：Shadowrocket → HTTPS 解密 → 生成根证书 → 安装 → 信任（设置→通用→关于本机→证书信任设置里全部打勾）。本模块不携带任何证书。
+2. **「模块」页 → 添加模块**，粘贴一个链接即可：
+   - 你自己（每日自动更新）：`https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/latest/adkit.module`
+   - 朋友用（每周二钉版，稳）：`https://raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/stable/adkit.module`
+3. 打开模块开关。一个模块内含：约 10.7 万条域名拦截 + 44 条开屏/内嵌 API 改写 + MITM 域名清单（带 `%APPEND%`，与你的机场配置和其他模块**合并**而非互相覆盖）。节点、策略、机场订阅完全不受影响，之后自动更新，无需再操作。
 
-> GitHub 打不开时用 jsDelivr 镜像导入（仅首次，把 `raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/` 换成 `cdn.jsdelivr.net/gh/JZmogu/ShadowRocketADBlock@dist/`）。
-> 一次性替代方案：`latest/adkit.module` / `stable/adkit.module`（规则+改写+MITM 合一的大模块，约 4MB——部分旧版 SR 对超大模块支持不佳，优先用上面的拆分法）。
-> 真机请验证：规则页条数正常显示、模块开关打开后日志出现 `REJECT`、机场节点正常。若个别 SR 版本把模块规则排在主配置规则之后导致不生效，拆分法天然规避（规则页优先级由你手动排序）。
+> GitHub 打不开时用镜像导入（仅首次）：把 `raw.githubusercontent.com/JZmogu/ShadowRocketADBlock/dist/` 换成 `cdn.jsdelivr.net/gh/JZmogu/ShadowRocketADBlock@dist/`。
+> 若你的 SR 版本没有自动更新远程模块（模块页显示的版本号长期不变），在模块页手动下拉刷新一次即可；也可以到"自我构建"处用规则页拆分法作备用方案（见附录）。
 
 ## 用法二：整份订阅（只有当你不需要代理节点时）
 
@@ -32,6 +28,10 @@ Shadowrocket 同一时刻只有一份"主配置"。**不要把本仓库的 conf 
 
 之后 SR 通过配置里的 `update-url` 自动检查更新，**无需任何手动操作**。
 另有 `dist/adkit-adonly.conf`（纯 [Rule] 段）可作为"规则"页的远程子规则使用（不含开屏改写/MITM，功能不完整，仅备用）。
+
+## 附录：拆分法（备用）
+
+个别旧版 SR 对超大模块（本模块约 4MB）支持不佳时，改用两处分别添加：「规则」页远程规则 `dist/adkit-adonly.conf`（域名拦截）+「模块」页 `dist/latest(adkit-lite).module`（仅改写+MITM，5KB）。效果与单模块等价。
 
 ## 发现误杀怎么办
 
