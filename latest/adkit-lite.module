@@ -3,7 +3,7 @@
 
 # ShadowRocketADBlock —— adkit 自动构建产物，请勿手改
 # 白名单: config/whitelist.txt | 开屏改写: config/rewrite.toml | 源开关: config/sources.toml
-# 构建(UTC): 2026-10-30T10:57:57Z | adkit v0.1
+# 构建(UTC): 2026-10-31T06:44:16Z | adkit v0.1
 # 规则出处及许可: johnshall (CC-BY-SA-4.0); antiad (MIT); awavenue (GPL-3.0); huijingfei (无许可证（已按出处收录，作者异议即剔除）)
 # 本文件不含任何 CA/私钥；HTTPS 解密使用当前配置中你自己的证书
 
