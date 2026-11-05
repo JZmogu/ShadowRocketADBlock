@@ -3,7 +3,7 @@
 
 # ShadowRocketADBlock —— adkit 自动构建产物，请勿手改
 # 白名单: config/whitelist.txt | 开屏改写: config/rewrite.toml | 源开关: config/sources.toml
-# 构建(UTC): 2026-11-05T07:45:55Z | adkit v0.1
+# 构建(UTC): 2026-11-05T10:12:44Z | adkit v0.1
 # 规则出处及许可: johnshall (CC-BY-SA-4.0); antiad (MIT); awavenue (GPL-3.0); huijingfei (无许可证（已按出处收录，作者异议即剔除）)
 # 本文件不含任何 CA/私钥；HTTPS 解密使用当前配置中你自己的证书
 
@@ -110011,37 +110011,37 @@ DOMAIN-SUFFIX,zohowebstatic.com,DIRECT
 DOMAIN-SUFFIX,zol-img.com.cn,DIRECT
 DOMAIN-SUFFIX,zol.com.cn,DIRECT
 DOMAIN-SUFFIX,zvo.cn,DIRECT
-IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
-IP-CIDR,101.124.19.122/32,DIRECT,no-resolve
-IP-CIDR,101.72.227.0/24,DIRECT,no-resolve
-IP-CIDR,101.72.250.0/24,DIRECT,no-resolve
-IP-CIDR,101.75.246.78/32,DIRECT,no-resolve
-IP-CIDR,106.11.232.0/24,DIRECT,no-resolve
-IP-CIDR,106.117.244.0/24,DIRECT,no-resolve
-IP-CIDR,114.112.207.0/24,DIRECT,no-resolve
-IP-CIDR,114.112.210.39/32,DIRECT,no-resolve
-IP-CIDR,120.52.30.130/32,DIRECT,no-resolve
-IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
-IP-CIDR,157.148.59.0/24,DIRECT,no-resolve
-IP-CIDR,157.148.62.0/24,DIRECT,no-resolve
-IP-CIDR,157.255.191.0/24,DIRECT,no-resolve
-IP-CIDR,157.255.209.0/24,DIRECT,no-resolve
-IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
-IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
-IP-CIDR,203.119.238.85/32,DIRECT,no-resolve
-IP-CIDR,203.119.238.96/32,DIRECT,no-resolve
-IP-CIDR,218.12.78.227/32,DIRECT,no-resolve
-IP-CIDR,218.12.78.229/32,DIRECT,no-resolve
-IP-CIDR,221.194.182.251/32,DIRECT,no-resolve
-IP-CIDR,221.195.21.50/32,DIRECT,no-resolve
-IP-CIDR,221.195.63.237/32,DIRECT,no-resolve
-IP-CIDR,45.137.181.197/32,DIRECT,no-resolve
-IP-CIDR,59.82.120.217/32,DIRECT,no-resolve
-IP-CIDR,59.82.121.55/32,DIRECT,no-resolve
-IP-CIDR,59.82.122.0/24,DIRECT,no-resolve
-IP-CIDR,59.82.122.165/32,DIRECT,no-resolve
-IP-CIDR,61.182.130.0/24,DIRECT,no-resolve
-IP-CIDR,61.182.131.0/24,DIRECT,no-resolve
+IP-CIDR,10.0.0.0/8,DIRECT
+IP-CIDR,101.124.19.122/32,DIRECT
+IP-CIDR,101.72.227.0/24,DIRECT
+IP-CIDR,101.72.250.0/24,DIRECT
+IP-CIDR,101.75.246.78/32,DIRECT
+IP-CIDR,106.11.232.0/24,DIRECT
+IP-CIDR,106.117.244.0/24,DIRECT
+IP-CIDR,114.112.207.0/24,DIRECT
+IP-CIDR,114.112.210.39/32,DIRECT
+IP-CIDR,120.52.30.130/32,DIRECT
+IP-CIDR,127.0.0.0/8,DIRECT
+IP-CIDR,157.148.59.0/24,DIRECT
+IP-CIDR,157.148.62.0/24,DIRECT
+IP-CIDR,157.255.191.0/24,DIRECT
+IP-CIDR,157.255.209.0/24,DIRECT
+IP-CIDR,172.16.0.0/12,DIRECT
+IP-CIDR,192.168.0.0/16,DIRECT
+IP-CIDR,203.119.238.85/32,DIRECT
+IP-CIDR,203.119.238.96/32,DIRECT
+IP-CIDR,218.12.78.227/32,DIRECT
+IP-CIDR,218.12.78.229/32,DIRECT
+IP-CIDR,221.194.182.251/32,DIRECT
+IP-CIDR,221.195.21.50/32,DIRECT
+IP-CIDR,221.195.63.237/32,DIRECT
+IP-CIDR,45.137.181.197/32,DIRECT
+IP-CIDR,59.82.120.217/32,DIRECT
+IP-CIDR,59.82.121.55/32,DIRECT
+IP-CIDR,59.82.122.0/24,DIRECT
+IP-CIDR,59.82.122.165/32,DIRECT
+IP-CIDR,61.182.130.0/24,DIRECT
+IP-CIDR,61.182.131.0/24,DIRECT
 
 [URL Rewrite]
 ^https:\/\/www\.tianxibook\.com\/public\/\d{6}\.js$ _ REJECT-DICT
@@ -110050,7 +110050,7 @@ IP-CIDR,61.182.131.0/24,DIRECT,no-resolve
 ^https?:\/\/api\.zhihu\.com\/commercial_api\/(real_time_)?launch_v2\? _ REJECT-DICT
 ^https?:\/\/app\.bilibili\.com\/x\/v2\/splash\/(event\/list|brand\/list|show|list) _ REJECT-DICT
 ^https?:\/\/m5\.amap\.com\/ws\/(feature\/preheat\/bootevent|shield\/dsp\/app\/startup\/init|valueadded\/alimama\/splash_screen) _ REJECT-DICT
-^https?:\/\/api\.m\.jd\.com\/client\.action\?functionId=(lite_advertising|homeAreaPop) _ REJECT
+^https?:\/\/api\.m\.jd\.com\/client\.action\?(?:[^&#]*&)*functionId=(?:lite_advertising|homeAreaPop)(?:[&#]|$) _ REJECT
 ^https?:\/\/(img\w|kjimg10)\.360buyimg\.com\/(pop|mcmktresadmin)\/jfs\/([\w\W]*)\.(jpg|png|heic|webp|avif) _ REJECT-200
 ^https?:\/\/ossgw\.alicdn\.com\/creatives-assets\/(image|prod)\/([^?#]*)\.(jpg|png|heic|webp)(?:[?#]|$) _ REJECT-200
 ^https?:\/\/cloud\.video\.taobao\.com\/vod\/([^?#]*)\.mp4(?:[?#]|$) _ REJECT-200
@@ -110078,10 +110078,10 @@ IP-CIDR,61.182.131.0/24,DIRECT,no-resolve
 ^https?://edith\.xiaohongshu\.com/api/sns/v\d+/search/notes/recommend_info\? _ REJECT-DICT
 ^https?://www\.xiaohongshu\.com/api/sns/v\d+/(?:tag/ads_engage|ads/apple/record|ads/resource) _ REJECT-DICT
 ^https?://referee\.xiaohongshu\.com/v\d+/stateReport _ REJECT-DICT
-^https?://img\.meituan\.net/(?:adunion|display|midas|bizad|brandCpt)/\w+\.(?:gif|jpg|png|jpg\.webp)$ _ REJECT-IMG
+^https?://img\.meituan\.net/(?:adunion|display|midas|bizad|brandCpt)/[\w-]+\.(?:gif|jpg|png|jpg\.webp)(?:@\d+[A-Za-z](?:_\d+[A-Za-z])*(?:\.(?:gif|jpg|jpeg|png|webp))?)?(?:[?#]|$) _ REJECT-IMG
 ^https?://(?:s3plus|flowplus)\.meituan\.net/v\d+/\w+/linglong/\w+\.(?:gif|jpg|mp4) _ REJECT-200
 ^https?://p\d+\.meituan\.net/(?:bizad|wmbanner)/\w+\.jpg _ REJECT-IMG
-^https?://(?:wmapi\.meituan\.com/api/v\d+/startpicture|www\.meituan\.com/api/v\d+/appstatus\?ad|peisongapi\.meituan\.com/client/getInitiateImage) _ REJECT-DICT
+^https?://(?:wmapi\.meituan\.com/api/v\d+/startpicture|www\.meituan\.com/api/v\d+/appstatus\?(?:[^&#]*&)*ad(?:=[^&#]*)?(?:[&#]|$)|peisongapi\.meituan\.com/client/getInitiateImage) _ REJECT-DICT
 ^https?://c\.y\.qq\.com/splcloud/fcgi-bin/fcg_get_starting_page_songs _ REJECT-DICT
 ^https?://r\.inews\.qq\.com/(adsBlacklist|getFullScreenPic|getQQNewsRemoteConfig) _ REJECT-DICT
 ^https?://r\.inews\.qq\.com/(getBannerAds|getNewsRemoteConfig|getSplash|searchHotCatList|upLoadLoc) _ REJECT-DICT
@@ -110094,4 +110094,4 @@ IP-CIDR,61.182.131.0/24,DIRECT,no-resolve
 
 [MITM]
 enable = true
-hostname = %APPEND% *.360buyimg.com,*.58.com,*.alicdn.com,*.elemecdn.com,*.meituan.net,*.taou.com,*.weibo.cn,*.weibo.com,*.xiaohongshu.com,*.y.qq.com,acs.m.goofish.com,acs.m.taobao.com,api.m.jd.com,api.zhihu.com,app.bilibili.com,appconf.mail.163.com,beacon.qq.com,c.y.qq.com,client.mail.163.com,cloud.video.taobao.com,elemecdn.com,guide-acs.m.taobao.com,interface.music.163.com,interface3.music.163.com,m5.amap.com,manga.bilibili.com,mp.weixin.qq.com,otheve.beacon.qq.com,peisongapi.meituan.com,r.inews.qq.com,wmapi.meituan.com,www.meituan.com,www.tianxibook.com
+hostname = %APPEND% *.360buyimg.com,*.58.com,*.alicdn.com,*.elemecdn.com,*.meituan.net,*.taou.com,*.weibo.cn,*.weibo.com,*.xiaohongshu.com,*.y.qq.com,acs.m.goofish.com,acs.m.taobao.com,api.m.jd.com,api.zhihu.com,app.bilibili.com,appconf.mail.163.com,beacon.qq.com,c.y.qq.com,client.mail.163.com,cloud.video.taobao.com,elemecdn.com,guide-acs.m.taobao.com,interface.music.163.com,interface3.music.163.com,m.xianqihaotianmi.org,m.xsbiquge.la,m5.amap.com,manga.bilibili.com,mp.weixin.qq.com,otheve.beacon.qq.com,p*-ad-sign.byteimg.com,p*-sign.douyinpic.com,peisongapi.meituan.com,r.inews.qq.com,wmapi.meituan.com,www.meituan.com,www.tianxibook.com

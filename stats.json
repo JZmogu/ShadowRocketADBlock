@@ -1,5 +1,5 @@
 {
- "built_utc": "2026-11-05T07:45:55Z",
+ "built_utc": "2026-11-05T10:12:44Z",
  "per_source": {
   "johnshall": 53069,
   "antiad": 102440,
@@ -18,7 +18,7 @@
  "total_rendered": 110029,
  "whitelist": 0,
  "rewrites": 47,
- "mitm_hosts": 33,
+ "mitm_hosts": 37,
  "canary": {
   "size": 59,
   "violations": []
@@ -38,5 +38,5 @@
   "huijingfei": "3a22594c9414c8059923b0acaeacb0f8d3263e6985137ea0fcb9ba3f893644c8",
   "user": "e7ace154f010e3eed4f7a5e7b1e8291340d9286e794eb4b4028c379274eb5d02"
  },
- "source_commit": "1780844bebf74b0f5af5841d44895394f27b8822"
+ "source_commit": "31b8007f1e13bcd646ce86e1835e8c2410b9b2e2"
 }
