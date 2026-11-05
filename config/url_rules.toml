@@ -1,0 +1,39 @@
+# 上游/用户 [Rule] 中 URL-REGEX 的审查登记表，不会额外生成改写。
+# pattern 必须与解析后的规则完全一致；上游新增或修改正则需先补登记再发布。
+# HTTPS 正例的主机须同时列入 rewrite.toml 的 [mitm] hosts。
+# 样例用于回归检查，不代表真机验证或覆盖正则的全部可能 URL。
+
+[[url_rule]]
+site = "小说站随机 JS"
+pattern = 'https?:\/\/m\.xianqihaotianmi\.org\/[a-zA-Z0-9]{8}\/[a-zA-Z0-9]{10}\.js'
+src = "huijingfei snapshot"
+example_urls = ["https://m.xianqihaotianmi.org/abcdefgh/abcdefghij.js", "http://m.xianqihaotianmi.org/abcdefgh/abcdefghij.js"]
+allow_urls = ["https://m.xianqihaotianmi.org/js/app.js"]
+
+[[url_rule]]
+site = "小说站随机 JS（仅 HTTP）"
+pattern = '^http:\/\/m\.chensiwx\.com\/[a-zA-Z0-9]{8}\/[a-zA-Z0-9]{10}\.js'
+src = "huijingfei snapshot"
+example_urls = ["http://m.chensiwx.com/abcdefgh/abcdefghij.js"]
+allow_urls = ["https://m.chensiwx.com/abcdefgh/abcdefghij.js", "http://m.chensiwx.com/js/app.js"]
+
+[[url_rule]]
+site = "字节广告签名图"
+pattern = 'p([\w]*)\-ad\-sign\.byteimg\.com\/web\.business\.image'
+src = "huijingfei snapshot"
+example_urls = ["https://p1-ad-sign.byteimg.com/web.business.image", "https://p9-ad-sign.byteimg.com/web.business.image/banner.jpg"]
+allow_urls = ["https://p1-ad-sign.byteimg.com/tos-cn/product.jpg"]
+
+[[url_rule]]
+site = "抖音 large/tos 图"
+pattern = 'p([\w]*)\-sign\.douyinpic\.com\/large\/tos'
+src = "huijingfei snapshot"
+example_urls = ["https://p1-sign.douyinpic.com/large/tos", "https://p9-sign.douyinpic.com/large/tos-cn/banner.jpg"]
+allow_urls = ["https://p1-sign.douyinpic.com/small/product.jpg"]
+
+[[url_rule]]
+site = "笔趣阁 detail JS"
+pattern = 'm\.xsbiquge\.la\/js\/detail\.js'
+src = "huijingfei snapshot"
+example_urls = ["https://m.xsbiquge.la/js/detail.js", "http://m.xsbiquge.la/js/detail.js"]
+allow_urls = ["https://m.xsbiquge.la/js/app.js"]

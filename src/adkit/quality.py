@@ -5,7 +5,7 @@ import fnmatch
 import re
 from urllib.parse import urlsplit
 
-from .ir import domain_sane
+from .ir import URLREGEX, domain_sane
 from .render import ordered_rules
 
 FORBIDDEN = ("ca-p12", "ca-passphrase", "private key")
@@ -44,11 +44,52 @@ def url_canary_check(rules, rewrites, urls):
     return bad
 
 
+def mitm_host_sane(host):
+    """允许主机名中的 * / ? 通配符，不接受 fnmatch 字符类等额外语法。"""
+    return (
+        isinstance(host, str) and host == host.lower()
+        and re.fullmatch(r"[a-z0-9.*?\-]+", host) is not None
+        and re.search(r"[a-z0-9]", host) is not None
+        and domain_sane(host.replace("*", "a").replace("?", "a"))
+    )
+
+
+def _url_samples_check(entry, regex, label, mitm_hosts):
+    errors = []
+    for field in ("example_urls", "allow_urls"):
+        samples = entry.get(field)
+        if not isinstance(samples, list) or not samples:
+            errors.append(f"{label}: 缺少 {field} 示例")
+            continue
+        for sample in samples:
+            try:
+                parsed = urlsplit(sample) if isinstance(sample, str) else None
+                valid = parsed and parsed.scheme in ("http", "https") and parsed.hostname
+            except ValueError:
+                valid = False
+            if not valid:
+                errors.append(f"{label}: 无效 URL 示例 {sample!r}")
+                continue
+            matches = regex.search(sample) is not None
+            if field == "example_urls":
+                if not matches:
+                    errors.append(f"{label}: 正例未匹配 {sample}")
+                # HTTP 正例不能绕过支持 HTTPS 的同一规则的主机检查。
+                https_sample = parsed._replace(scheme="https").geturl()
+                if regex.search(https_sample) and not any(
+                    fnmatch.fnmatchcase(parsed.hostname, h) for h in mitm_hosts
+                ):
+                    errors.append(f"{label}: HTTPS 正例缺少 MITM hostname: {parsed.hostname}")
+            elif matches:
+                errors.append(f"{label}: 负例被误匹配 {sample}")
+    return errors
+
+
 def rewrite_check(rewrites, mitm_hosts):
     """验证登记表与示例；正反例不代表完整的客户端兼容性验证。"""
     errors = []
     for host in mitm_hosts:
-        if not domain_sane(host.removeprefix("*.")) or host != host.lower():
+        if not mitm_host_sane(host):
             errors.append(f"无效 MITM hostname: {host}")
     for index, rewrite in enumerate(rewrites, 1):
         if not rewrite.get("enabled", True):
@@ -70,30 +111,37 @@ def rewrite_check(rewrites, mitm_hosts):
         except re.error as exc:
             errors.append(f"{label}: 正则无效: {exc}")
             continue
-        for field in ("example_urls", "allow_urls"):
-            samples = rewrite.get(field)
-            if not isinstance(samples, list) or not samples:
-                errors.append(f"{label}: 缺少 {field} 示例")
-                continue
-            for sample in samples:
-                try:
-                    parsed = urlsplit(sample) if isinstance(sample, str) else None
-                    valid = parsed and parsed.scheme in ("http", "https") and parsed.hostname
-                except ValueError:
-                    valid = False
-                if not valid:
-                    errors.append(f"{label}: 无效 URL 示例 {sample!r}")
-                    continue
-                matches = regex.search(sample) is not None
-                if field == "example_urls":
-                    if not matches:
-                        errors.append(f"{label}: 正例未匹配 {sample}")
-                    if parsed.scheme == "https" and not any(
-                        fnmatch.fnmatchcase(parsed.hostname, h) for h in mitm_hosts
-                    ):
-                        errors.append(f"{label}: HTTPS 正例缺少 MITM hostname: {parsed.hostname}")
-                elif matches:
-                    errors.append(f"{label}: 负例被误匹配 {sample}")
+        errors.extend(_url_samples_check(rewrite, regex, label, mitm_hosts))
+    return errors
+
+
+def url_rule_check(rules, registry, mitm_hosts):
+    """每条实际使用的 URL-REGEX 都必须有已审查的样例及 HTTPS 解密覆盖。"""
+    errors, registered = [], {}
+    if not isinstance(registry, list):
+        return ["URL 规则登记必须是 url_rule 表列表"]
+    for entry in registry:
+        if not isinstance(entry, dict):
+            errors.append("URL 规则登记必须是表")
+            continue
+        pattern = entry.get("pattern")
+        if not isinstance(pattern, str) or not pattern:
+            errors.append("URL 规则登记缺少 pattern")
+        elif pattern in registered:
+            errors.append(f"URL 规则重复登记: {pattern}")
+        else:
+            registered[pattern] = entry
+    checked = set()
+    for rule in rules:
+        if rule.type != URLREGEX or rule.pattern in checked:
+            continue
+        checked.add(rule.pattern)
+        entry = registered.get(rule.pattern)
+        if entry is None:
+            errors.append(f"URL-REGEX 未登记样例: {rule.pattern}（来源: {'+'.join(rule.sources)}）")
+            continue
+        label = entry.get("site", rule.pattern)
+        errors.extend(_url_samples_check(entry, re.compile(rule.pattern), label, mitm_hosts))
     return errors
 
 

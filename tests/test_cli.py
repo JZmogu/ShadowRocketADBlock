@@ -114,10 +114,21 @@ hosts = ["service.test"]
         self.assertEqual(self.build(), 2)
         self.assertFalse(self.dist.exists())
 
-    def test_explicit_user_ip_reject_is_retained(self):
-        (self.cfg / "user_rules.txt").write_text("IP-CIDR,203.0.113.0/24,REJECT\n")
+    def test_explicit_user_ip_reject_preserves_dns_resolution_choice(self):
+        lines = [f"{rule_type},{network},REJECT{modifier}"
+                 for rule_type, network in (("IP-CIDR", "203.0.113.0/24"),
+                                            ("IP-CIDR6", "2001:db8::/32"))
+                 for modifier in ("", ",no-resolve")]
+        (self.cfg / "user_rules.txt").write_text("\n".join(lines) + "\n")
         self.assertEqual(self.build(), 0)
-        self.assertIn("IP-CIDR,203.0.113.0/24,REJECT,no-resolve", (self.dist / "stable/adkit.conf").read_text())
+        outputs = ["adkit-adonly.conf"] + [f"{channel}/adkit.{suffix}"
+                                           for channel in ("stable", "latest")
+                                           for suffix in ("conf", "module")]
+        for output in outputs:
+            with self.subTest(output=output):
+                actual = (self.dist / output).read_text().splitlines()
+                for line in lines:
+                    self.assertEqual(actual.count(line), 1)
 
     def test_upstream_ip_reject_is_screened(self):
         self.assertEqual(self.build(download=b"DOMAIN,new.ads.test,REJECT\nIP-CIDR,203.0.113.0/24,REJECT\n"), 0)

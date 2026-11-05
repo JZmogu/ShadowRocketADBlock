@@ -40,13 +40,13 @@ def screen(rules):
 def dedup(rules):
     m, order = {}, []
     for r in rules:
-        k = r.key()
+        k = (r.key(), r.modifiers)
         if k in m:
             for s in r.sources:
                 if s not in m[k].sources:
                     m[k].sources.append(s)
         else:
-            m[k] = Rule(*k, sources=list(dict.fromkeys(r.sources)))
+            m[k] = Rule(*r.key(), sources=list(dict.fromkeys(r.sources)), modifiers=r.modifiers)
             order.append(k)
     return [m[k] for k in order]
 

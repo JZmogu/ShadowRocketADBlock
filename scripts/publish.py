@@ -18,6 +18,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST_REF = "refs/heads/dist"
+SOURCE_REF = "refs/heads/main"
 TRACKING_REF = "refs/remotes/origin/dist"
 IDENTITY = ["-c", "user.name=adkit-bot", "-c", "user.email=adkit-bot@users.noreply.github.com"]
 CHANNEL_FILES = (
@@ -74,6 +75,18 @@ def checked_stats(data: bytes) -> dict:
     return stats
 
 
+def check_source_head(root: Path, source_sha: str):
+    """Reject superseded source runs even when their dist lease is current."""
+    if not re.fullmatch(r"[0-9a-f]{40}|[0-9a-f]{64}", source_sha):
+        raise ValueError("来源提交 SHA 无效，停止发布")
+    if git(root, "rev-parse", "HEAD").stdout.decode().strip() != source_sha:
+        raise ValueError("来源提交与当前 checkout 不一致，停止发布")
+    result = git(root, "ls-remote", "--exit-code", "--heads", "origin", SOURCE_REF)
+    entries = [line.split() for line in result.stdout.decode().splitlines()]
+    if entries != [[source_sha, SOURCE_REF]]:
+        raise ValueError("来源提交已过期（origin/main 已更新），停止发布")
+
+
 def restore(root: Path) -> str | None:
     marker = state_path(root)
     marker.unlink(missing_ok=True)
@@ -119,17 +132,20 @@ def write_file(root: Path, name: str, data: bytes):
     path.write_bytes(data)
 
 
-def push_tree(root: Path, worktree: Path, base: str | None, message: str) -> str:
+def push_tree(root: Path, worktree: Path, base: str | None, message: str,
+              source_sha: str | None = None) -> str:
     git(worktree, "add", "--all")
     if git(worktree, "diff", "--cached", "--quiet", check=False).returncode:
         git(worktree, *IDENTITY, "commit", "-m", message)
     commit = git(worktree, "rev-parse", "HEAD").stdout.decode().strip()
+    if source_sha is not None:
+        check_source_head(root, source_sha)
     # Exact expected SHA also protects against external writers or manual resets.
     git(root, "push", f"--force-with-lease={DIST_REF}:{base or ''}", "origin", f"{commit}:{DIST_REF}")
     return commit
 
 
-def publish(root: Path) -> str:
+def publish(root: Path, source_sha: str | None = None) -> str:
     marker = state_path(root)
     if not marker.exists():
         raise ValueError("发布前必须先 restore，再运行构建")
@@ -138,7 +154,11 @@ def publish(root: Path) -> str:
         "adkit-adonly.conf": (root / "dist/adkit-adonly.conf").read_bytes(),
         "stats.json": (root / "dist/stats.json").read_bytes(),
     }
-    checked_stats(payload["stats.json"])
+    stats = checked_stats(payload["stats.json"])
+    if source_sha is not None:
+        if stats.get("source_commit") != source_sha:
+            raise ValueError("构建产物与来源提交不一致，停止发布")
+        check_source_head(root, source_sha)
     for name, pending in CHANNEL_FILES:
         payload[f"latest/{name}"] = (root / "dist/latest" / name).read_bytes()
         payload[pending] = (root / "dist/stable" / name).read_bytes()
@@ -162,7 +182,7 @@ def publish(root: Path) -> str:
         for name, data in payload.items():
             write_file(tree, name, data)
         now = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
-        commit = push_tree(root, tree, base, f"build {now}")
+        commit = push_tree(root, tree, base, f"build {now}", source_sha=source_sha)
     marker.unlink(missing_ok=True)
     return commit
 
@@ -189,12 +209,14 @@ def main():
     parser.add_argument("command", choices=("restore", "publish", "promote"))
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--output", type=Path, default=ROOT / "dist/release")
+    parser.add_argument("--source-sha", default=os.environ.get("GITHUB_SHA"),
+                        help="publish 要求来源提交仍为 origin/main HEAD（默认 GITHUB_SHA）")
     args = parser.parse_args()
     try:
         if args.command == "restore":
             commit = restore(args.root)
         elif args.command == "publish":
-            commit = publish(args.root)
+            commit = publish(args.root, source_sha=args.source_sha)
         else:
             commit = promote(args.root, args.output)
         print(commit or "bootstrap")

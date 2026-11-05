@@ -47,7 +47,11 @@ Shadowrocket 的 URL REJECT 改写默认在“配置”路由模式生效。如�
 
 域名误杀可通过 `config/whitelist.txt` 增加 DIRECT 例外；自定义域名/IP 规则放在 `config/user_rules.txt`。URL 改写误杀需要调整或禁用 `config/rewrite.toml` 中对应条目，域名白名单不等于关闭 HTTPS 改写。修改在下一次成功构建发布后生效。
 
+自定义 IP 规则会保留是否携带 `no-resolve` 的选择。例如 `IP-CIDR,203.0.113.0/24,REJECT` 允许客户端为域名请求解析 IP 后检查该网段；只有明确写入 `,no-resolve` 时才禁止该规则触发 DNS 查询。IPv6 的 `IP-CIDR6` 同样处理。
+
 `config/rewrite.toml` 手工维护改写、出处、应匹配的 `example_urls` 和不应匹配本条规则的 `allow_urls`。构建检查正则、动作、样例匹配和 HTTPS 样例的 MITM 覆盖；这些输入不能代表所有真实请求。当前“淘宝视频广告”规则覆盖 `cloud.video.taobao.com/vod/` 下的 MP4，可能包含非广告视频，并与 alimama 视频规则重叠；需要保留此类视频时，可禁用这一条并根据实际 URL 调整。该规则不代表能够关闭所有自动直播。
+
+上游或自定义规则中的 `URL-REGEX` 还需在 `config/url_rules.toml` 登记正则及正反例，并为 HTTPS 正例在 `config/rewrite.toml` 的 `[mitm]` 中配置主机名。新增或变更的路径规则未登记、样例不符或缺少解密主机时，构建不会将其静默发布；上游候选失败会尝试已有的有效快照。主机名可用限定范围的通配符，例如 `p*-ad-sign.byteimg.com`。
 
 ```sh
 python main.py build           # 抓取并构建，产物在 dist/
@@ -57,6 +61,8 @@ python -m unittest discover -s tests -q
 ```
 
 使用 Python 3.11+ 标准库，无第三方运行依赖。下载地址、开关和单源健康阈值在 `config/sources.toml`。下载或内容校验失败时尝试有效本地快照，没有可用副本或后续检查失败则停止发布。全部质量检查成功后才更新有效快照；CI 将其随产物保存到 dist，并在下次构建前恢复快照与历史统计。
+
+CI 发布会核对构建来源、产物记录的提交和远端 `main`，并在推送前再次检查，拒绝已经过期的构建，避免较慢的旧运行覆盖新规则。手动使用发布脚本时可传入 `--source-sha` 指定要核对的完整来源提交。
 
 域名金丝雀和代表性正常 URL 用来发现登记范围内的误拦，不会自动创建 DIRECT 规则，也不能证明所有子域名、路径或 App 版本正常。`explain` 查询本地配置与数据，不代表手机上已经使用了这个版本；它无法复现客户端证书状态、网络协议、缓存或 App 的实际请求。
 

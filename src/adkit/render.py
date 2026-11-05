@@ -5,7 +5,7 @@ TYPE_ORDER = {"URL-REGEX": 0, "DOMAIN-KEYWORD": 1, "DOMAIN": 2, "DOMAIN-SUFFIX":
 
 
 def _fmt(r) -> str:
-    if r.type in ("IP-CIDR", "IP-CIDR6"):
+    if r.type in ("IP-CIDR", "IP-CIDR6") and "no-resolve" in r.modifiers:
         return f"{r.type},{r.pattern},{r.action},no-resolve"
     return f"{r.type},{r.pattern},{r.action}"
 
