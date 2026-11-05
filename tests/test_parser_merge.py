@@ -44,6 +44,30 @@ class ParserRegressionTest(unittest.TestCase):
         rules, _ = parse_surge_list("IP-CIDR6,2001:db8::/32,DIRECT,no-resolve", "test")
         self.assertEqual((rules[0].pattern, rules[0].action), ("2001:db8::/32", "DIRECT"))
 
+    def test_ip_no_resolve_choice_survives_parse_and_render(self):
+        for parser in (parse_surge_list, parse_sr_conf_rule):
+            for rule_type, network in (("IP-CIDR", "203.0.113.0/24"),
+                                       ("IP-CIDR6", "2001:db8::/32")):
+                for modifier in ("", ",no-resolve", ",NO-RESOLVE", ",No-Resolve"):
+                    with self.subTest(parser=parser.__name__, rule_type=rule_type, modifier=modifier):
+                        line = f"{rule_type},{network},REJECT"
+                        rules, skipped = parser(line + modifier, "user")
+                        self.assertEqual(skipped, 0)
+                        self.assertEqual(rules[0].modifiers, ("no-resolve",) if modifier else ())
+                        rendered = render.render_adonly(rules, "# test").splitlines()
+                        self.assertIn(line + (",no-resolve" if modifier else ""), rendered)
+                        self.assertNotIn(line + ("" if modifier else ",no-resolve"), rendered)
+
+    def test_only_effective_ip_no_resolve_modifier_is_retained(self):
+        rules, skipped = parse_surge_list(
+            "IP-CIDR,203.0.113.0/24,REJECT,important,no-resolve\n"
+            "DOMAIN,ads.example.com,REJECT,no-resolve,important\n", "test")
+        self.assertEqual(skipped, 0)
+        self.assertEqual([r.modifiers for r in rules], [("no-resolve",), ()])
+        output = render.render_adonly(rules, "# test")
+        self.assertIn("DOMAIN,ads.example.com,REJECT\n", output)
+        self.assertNotIn("important", output)
+
     def test_url_regex_preserves_internal_commas(self):
         patterns = (
             r"^https://ad[0-9]{1,3}\.example\.com/",
@@ -79,6 +103,27 @@ def first_action(rules, host):
 
 
 class AbsorptionRegressionTest(unittest.TestCase):
+    def test_ip_modifiers_survive_dedup_and_absorption(self):
+        for rule_type, network in (("IP-CIDR", "203.0.113.0/24"),
+                                   ("IP-CIDR6", "2001:db8::/32")):
+            with self.subTest(rule_type=rule_type):
+                line = f"{rule_type},{network},REJECT"
+                resolving, _ = parse_surge_list(line, "user")
+                cached, _ = parse_surge_list(line + ",no-resolve", "user")
+                duplicate, _ = parse_surge_list(line + ",NO-RESOLVE", "other")
+                screened, dropped = merge.screen(resolving + cached)
+                self.assertEqual(dropped, 0)
+                result = merge.dedup(screened + duplicate)
+                self.assertEqual(len(result), 2)
+                self.assertEqual([r.modifiers for r in result], [(), ("no-resolve",)])
+                self.assertEqual(result[0].sources, ["user"])
+                self.assertEqual(result[1].sources, ["user", "other"])
+                result, dropped = merge.absorb(result)
+                self.assertEqual(dropped, 0)
+                rendered = render.render_adonly(result, "# test").splitlines()
+                self.assertIn(line, rendered)
+                self.assertIn(line + ",no-resolve", rendered)
+
     def test_exact_rule_keeps_priority_over_other_action_suffix(self):
         rules = [
             Rule("DOMAIN", "a.x.com", "REJECT", ["exact"]),

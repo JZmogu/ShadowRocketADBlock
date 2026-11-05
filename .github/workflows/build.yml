@@ -44,4 +44,4 @@ jobs:
       - name: build with quality gates
         run: python main.py build
       - name: publish latest and preserve stable
-        run: python scripts/publish.py publish
+        run: python scripts/publish.py publish --source-sha "$GITHUB_SHA"

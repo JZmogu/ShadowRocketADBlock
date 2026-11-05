@@ -107,7 +107,10 @@ def _mk(t: str, parts, sid: str):
     act = _action(parts[2:])
     if act is None:
         return None
-    return Rule(t, pat, act, [sid])
+    modifiers = ("no-resolve",) if t in (IPCIDR, "IP-CIDR6") and any(
+        field.upper() == "NO-RESOLVE" for field in parts[2:]
+    ) else ()
+    return Rule(t, pat, act, [sid], modifiers=modifiers)
 
 
 def parse_surge_list(text: str, sid: str):

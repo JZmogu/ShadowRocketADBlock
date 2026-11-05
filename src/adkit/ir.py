@@ -21,8 +21,10 @@ class Rule:
     pattern: str
     action: str  # REJECT / REJECT-200 / REJECT-DICT / REJECT-IMG / REJECT-VIDEO / DIRECT ...
     sources: list = field(default_factory=list)
+    modifiers: tuple[str, ...] = ()
 
     def key(self):
+        # 保持三元组接口；合并时另将修饰符计入完整规则身份。
         return (self.type, self.pattern, self.action)
 
     def is_reject(self) -> bool:

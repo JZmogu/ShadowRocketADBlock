@@ -25,6 +25,11 @@ def load_cfg():
         cfg = tomllib.load(f)
     with open(CFG / "rewrite.toml", "rb") as f:
         rw = tomllib.load(f)
+    url_rules_path = CFG / "url_rules.toml"
+    rw["url_rule"] = []
+    if url_rules_path.exists():
+        with open(url_rules_path, "rb") as f:
+            rw["url_rule"] = tomllib.load(f).get("url_rule", [])
     ids = []
     for source in cfg.get("sources", []):
         sid = source.get("id", "")
@@ -89,11 +94,16 @@ def build_rules(cfg, rw, live: bool, only_ids=None, pending=None, source_hashes=
     direct = wl_rules + [r for r in user_rules if r.action == "DIRECT"]
     canaries = domain_list(CFG / "canary.txt")
     urls = url_canaries()
+    url_registry = rw.get("url_rule", [])
+    mitm_hosts = rw.get("mitm", {}).get("hosts", [])
 
     def validate_source(source, text):
+        source_rules, _ = PARSERS[source["parser"]](text, source["id"])
+        errors = quality.url_rule_check(source_rules, url_registry, mitm_hosts)
+        if errors:
+            raise ValueError("URL 规则检查失败: " + "; ".join(errors[:5]))
         if not check_canaries:
             return
-        source_rules, _ = PARSERS[source["parser"]](text, source["id"])
         bad = quality.canary_check(direct + source_rules, canaries)
         url_bad = quality.url_canary_check(direct + source_rules, [], urls)
         if bad or url_bad:
@@ -127,6 +137,9 @@ def build_rules(cfg, rw, live: bool, only_ids=None, pending=None, source_hashes=
         skipped["user"] = user_skipped
         if source_hashes is not None:
             source_hashes["user"] = hashlib.sha256(user_text.encode()).hexdigest()
+    errors = quality.url_rule_check(all_rules, url_registry, mitm_hosts)
+    if errors:
+        raise ValueError("URL 规则检查失败:\n" + "\n".join(errors))
     all_rules, ip_dropped = merge.screen(all_rules)
     if ip_dropped:
         warns.append(f"IP 过滤：剔除 {ip_dropped} 条 IP 拦截或过宽公网 DIRECT 规则")

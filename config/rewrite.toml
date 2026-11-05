@@ -71,12 +71,12 @@ allow_urls = ["https://m5.amap.com/ws/mapapi/poi/search"]
 
 [[rewrite]]
 site = "京东 广告弹窗/首页弹层"
-pattern = '^https?:\/\/api\.m\.jd\.com\/client\.action\?functionId=(lite_advertising|homeAreaPop)'
+pattern = '^https?:\/\/api\.m\.jd\.com\/client\.action\?(?:[^&#]*&)*functionId=(?:lite_advertising|homeAreaPop)(?:[&#]|$)'
 target = "_"
 action = "REJECT"
 src = "huijingfei@2026-10-29"
-example_urls = ["https://api.m.jd.com/client.action?functionId=lite_advertising", "https://api.m.jd.com/client.action?functionId=homeAreaPop"]
-allow_urls = ["https://api.m.jd.com/client.action?functionId=wareBusiness"]
+example_urls = ["https://api.m.jd.com/client.action?functionId=lite_advertising", "https://api.m.jd.com/client.action?functionId=homeAreaPop", "https://api.m.jd.com/client.action?client=apple&functionId=homeAreaPop&version=1"]
+allow_urls = ["https://api.m.jd.com/client.action?functionId=wareBusiness", "https://api.m.jd.com/client.action?notfunctionId=homeAreaPop", "https://api.m.jd.com/client.action?functionId=homeAreaPopExtra", "https://api.m.jd.com/client.action?body=functionId%3DhomeAreaPop"]
 
 [[rewrite]]
 site = "京东 弹窗营销图"
@@ -330,12 +330,12 @@ allow_urls = ["https://referee.xiaohongshu.com/v1/health"]
 # —— 美团系（主App/外卖：开屏图、营销图、弹窗）——
 [[rewrite]]
 site = "美团 广告素材图"
-pattern = '^https?://img\.meituan\.net/(?:adunion|display|midas|bizad|brandCpt)/\w+\.(?:gif|jpg|png|jpg\.webp)$'
+pattern = '^https?://img\.meituan\.net/(?:adunion|display|midas|bizad|brandCpt)/[\w-]+\.(?:gif|jpg|png|jpg\.webp)(?:@\d+[A-Za-z](?:_\d+[A-Za-z])*(?:\.(?:gif|jpg|jpeg|png|webp))?)?(?:[?#]|$)'
 target = "_"
 action = "REJECT-IMG"
 src = "akiralereal+deezertidal@2026-10-29"
-example_urls = ["https://img.meituan.net/adunion/banner.jpg", "https://img.meituan.net/display/banner.jpg", "https://img.meituan.net/midas/banner.jpg", "https://img.meituan.net/bizad/banner.jpg", "https://img.meituan.net/brandCpt/banner.jpg"]
-allow_urls = ["https://img.meituan.net/product/item.jpg"]
+example_urls = ["https://img.meituan.net/adunion/banner.jpg", "https://img.meituan.net/display/banner.jpg", "https://img.meituan.net/midas/banner.jpg", "https://img.meituan.net/bizad/banner.jpg", "https://img.meituan.net/brandCpt/banner.jpg", "https://img.meituan.net/adunion/banner-123.jpg?version=1", "https://img.meituan.net/display/banner.jpg@750w_1l", "https://img.meituan.net/midas/banner.jpg@750w_1l_0e_1c_100q.webp?version=1"]
+allow_urls = ["https://img.meituan.net/product/item.jpg", "https://img.meituan.net/product/item-123.jpg@750w_1l?version=1", "https://img.meituan.net/adunion/banner.jpg.backup", "https://img.meituan.net/adunion/banner.jpg@invalid", "https://img.meituan.net/adunion/banner.jpg@750w_1l.backup"]
 
 [[rewrite]]
 site = "美团 玲珑推广位"
@@ -357,12 +357,12 @@ allow_urls = ["https://p0.meituan.net/product/item.jpg"]
 
 [[rewrite]]
 site = "美团 开屏图接口/广告弹窗"
-pattern = '^https?://(?:wmapi\.meituan\.com/api/v\d+/startpicture|www\.meituan\.com/api/v\d+/appstatus\?ad|peisongapi\.meituan\.com/client/getInitiateImage)'
+pattern = '^https?://(?:wmapi\.meituan\.com/api/v\d+/startpicture|www\.meituan\.com/api/v\d+/appstatus\?(?:[^&#]*&)*ad(?:=[^&#]*)?(?:[&#]|$)|peisongapi\.meituan\.com/client/getInitiateImage)'
 target = "_"
 action = "REJECT-DICT"
 src = "deezertidal-startingad@2026-10-29"
-example_urls = ["https://wmapi.meituan.com/api/v1/startpicture", "https://www.meituan.com/api/v1/appstatus?ad=1", "https://peisongapi.meituan.com/client/getInitiateImage"]
-allow_urls = ["https://wmapi.meituan.com/api/v1/order", "https://www.meituan.com/api/v1/appstatus?version=1", "https://peisongapi.meituan.com/client/order"]
+example_urls = ["https://wmapi.meituan.com/api/v1/startpicture", "https://www.meituan.com/api/v1/appstatus?ad=1", "https://www.meituan.com/api/v1/appstatus?version=1&ad=1&client=app", "https://www.meituan.com/api/v1/appstatus?ad=0", "https://www.meituan.com/api/v1/appstatus?version=1&ad=10", "https://www.meituan.com/api/v1/appstatus?ad=custom", "https://www.meituan.com/api/v1/appstatus?ad=", "https://www.meituan.com/api/v1/appstatus?version=1&ad&client=app", "https://peisongapi.meituan.com/client/getInitiateImage"]
+allow_urls = ["https://wmapi.meituan.com/api/v1/order", "https://www.meituan.com/api/v1/appstatus?version=1", "https://www.meituan.com/api/v1/appstatus?address=1", "https://www.meituan.com/api/v1/appstatus?notad=1", "https://www.meituan.com/api/v1/appstatus?ad_extra=1", "https://peisongapi.meituan.com/client/order"]
 
 # —— 腾讯系（QQ音乐开屏、QQ 埋点）——
 [[rewrite]]
@@ -470,4 +470,6 @@ hosts = [
   "client.mail.163.com", "appconf.mail.163.com",
   "manga.bilibili.com",
   "beacon.qq.com", "otheve.beacon.qq.com",
+  # 上游 [Rule] 中 HTTPS URL-REGEX 所需的最窄主机范围
+  "m.xianqihaotianmi.org", "p*-ad-sign.byteimg.com", "p*-sign.douyinpic.com", "m.xsbiquge.la",
 ]

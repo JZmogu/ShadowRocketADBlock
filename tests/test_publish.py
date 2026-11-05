@@ -2,8 +2,10 @@
 import gzip
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -30,7 +32,10 @@ class PublishTest(unittest.TestCase):
         publish.git(self.root, "remote", "add", "origin", str(self.remote))
         publish.git(self.root, "push", "origin", "main")
 
-    def build(self, version):
+    def build(self, version, source_sha=None):
+        stats = {"version": version}
+        if source_sha is not None:
+            stats["source_commit"] = source_sha
         for name, text in {
             "dist/stable/adkit.conf": f"stable-{version}\nupdate-url = stable\n",
             "dist/latest/adkit.conf": f"latest-{version}\nupdate-url = latest\n",
@@ -39,7 +44,7 @@ class PublishTest(unittest.TestCase):
             "dist/stable/adkit-lite.module": f"stable-lite-{version}\nupdate-url = stable-lite\n",
             "dist/latest/adkit-lite.module": f"latest-lite-{version}\nupdate-url = latest-lite\n",
             "dist/adkit-adonly.conf": f"rules-{version}\n",
-            "dist/stats.json": json.dumps({"version": version}),
+            "dist/stats.json": json.dumps(stats),
         }.items():
             publish.write_file(self.root, name, text.encode())
         publish.write_file(self.root, "snapshots/example.gz", gzip.compress(f"snapshot-{version}".encode()))
@@ -62,6 +67,90 @@ class PublishTest(unittest.TestCase):
         self.assertIn(b"update-url = stable-lite", self.remote_file("pending-stable-lite.module"))
         self.assertEqual(publish.git(self.root, "branch", "--show-current").stdout.strip(), b"main")
         self.assertTrue((self.root / "source-only.py").exists())
+
+    def test_current_source_can_bootstrap_publish(self):
+        source_sha = publish.git(self.root, "rev-parse", "HEAD").stdout.decode().strip()
+        publish.restore(self.root)
+        self.build("current", source_sha=source_sha)
+        publish.publish(self.root, source_sha=source_sha)
+        self.assertIn(b"latest-current", self.remote_file("latest/adkit.conf"))
+        self.assertEqual(json.loads(self.remote_file("stats.json"))["source_commit"], source_sha)
+
+    def test_old_source_finishing_after_new_source_cannot_publish(self):
+        self.bootstrap()
+        old_source = publish.git(self.root, "rev-parse", "HEAD").stdout.decode().strip()
+        (self.root / "source-only.py").write_text("# newer source B\n")
+        publish.git(self.root, "add", "source-only.py")
+        publish.git(self.root, "commit", "-m", "source B")
+        new_source = publish.git(self.root, "rev-parse", "HEAD").stdout.decode().strip()
+        publish.git(self.root, "push", "origin", "main")
+        publish.restore(self.root)
+        self.build("new-B", source_sha=new_source)
+        current_dist = publish.publish(self.root, source_sha=new_source)
+
+        # A delayed A run restores the already-published B dist, so its dist lease is valid.
+        publish.git(self.root, "checkout", "--detach", old_source)
+        self.assertEqual(publish.restore(self.root), current_dist)
+        self.build("old-A", source_sha=old_source)
+        with self.assertRaisesRegex(ValueError, "来源提交已过期"):
+            publish.publish(self.root, source_sha=old_source)
+        self.assertEqual(publish.git(self.remote, "rev-parse", "dist").stdout.decode().strip(), current_dist)
+        self.assertIn(b"latest-new-B", self.remote_file("latest/adkit.conf"))
+        self.assertIn(b"stable-new-B", self.remote_file("pending-stable.conf"))
+
+        # The actual CLI must enforce GITHUB_SHA even without the explicit flag.
+        result = subprocess.run(
+            [sys.executable, str(SPEC.origin), "publish", "--root", str(self.root)],
+            env={**os.environ, "GITHUB_SHA": old_source, "GITHUB_OUTPUT": ""},
+            capture_output=True, text=True,
+        )
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("来源提交已过期", result.stdout)
+        self.assertEqual(publish.git(self.remote, "rev-parse", "dist").stdout.decode().strip(), current_dist)
+
+    def test_source_is_rechecked_immediately_before_push(self):
+        current_dist = self.bootstrap()
+        source_sha = publish.git(self.root, "rev-parse", "HEAD").stdout.decode().strip()
+        source_tree = publish.git(self.root, "rev-parse", "HEAD^{tree}").stdout.decode().strip()
+        new_source = publish.git(
+            self.root, *publish.IDENTITY, "commit-tree", source_tree, "-p", source_sha, "-m", "source B",
+        ).stdout.decode().strip()
+        publish.restore(self.root)
+        self.build("current", source_sha=source_sha)
+        real_git = publish.git
+        source_checks = 0
+        dist_pushes = []
+
+        def advance_source_on_final_check(root, *args, **kwargs):
+            nonlocal source_checks
+            if args[0] == "ls-remote" and args[-1] == publish.SOURCE_REF:
+                source_checks += 1
+                if source_checks == 2:
+                    # Another writer advances main after the first check while the payload is prepared.
+                    real_git(self.root, "push", "origin", f"{new_source}:{publish.SOURCE_REF}")
+            if args[0] == "push" and args[-1].endswith(":" + publish.DIST_REF):
+                dist_pushes.append(args)
+            return real_git(root, *args, **kwargs)
+
+        with patch.object(publish, "git", side_effect=advance_source_on_final_check):
+            with self.assertRaisesRegex(ValueError, "来源提交已过期"):
+                publish.publish(self.root, source_sha=source_sha)
+        self.assertEqual(source_checks, 2)
+        self.assertEqual(dist_pushes, [])
+        self.assertEqual(publish.git(self.remote, "rev-parse", "dist").stdout.decode().strip(), current_dist)
+
+    def test_expected_source_must_match_checkout_and_build(self):
+        current_dist = self.bootstrap()
+        source_sha = publish.git(self.root, "rev-parse", "HEAD").stdout.decode().strip()
+        publish.restore(self.root)
+        self.build("unattributed")
+        with self.assertRaisesRegex(ValueError, "构建产物与来源提交不一致"):
+            publish.publish(self.root, source_sha=source_sha)
+        other_source = "0" * 40
+        self.build("wrong-checkout", source_sha=other_source)
+        with self.assertRaisesRegex(ValueError, "当前 checkout 不一致"):
+            publish.publish(self.root, source_sha=other_source)
+        self.assertEqual(publish.git(self.remote, "rev-parse", "dist").stdout.decode().strip(), current_dist)
 
     def test_daily_preserves_stable_and_weekly_promotes_pending(self):
         self.bootstrap()

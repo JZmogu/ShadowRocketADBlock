@@ -42,6 +42,7 @@ class ParseTest(unittest.TestCase):
         rules, _ = parse_surge_list("IP-CIDR,1.2.3.0/24,REJECT,no-resolve", "t")
         self.assertEqual(rules[0].type, "IP-CIDR")
         self.assertEqual(rules[0].action, "REJECT")
+        self.assertEqual(rules[0].modifiers, ("no-resolve",))
 
 
 class MergeTest(unittest.TestCase):
