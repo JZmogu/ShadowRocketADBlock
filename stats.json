@@ -1,8 +1,8 @@
 {
- "built_utc": "2026-11-13T07:40:03Z",
+ "built_utc": "2026-11-14T07:27:12Z",
  "per_source": {
-  "johnshall": 52816,
-  "antiad": 101636,
+  "johnshall": 53229,
+  "antiad": 102656,
   "awavenue": 976,
   "huijingfei": 1266,
   "user": 1
@@ -15,7 +15,7 @@
   "user": 0
  },
  "absorbed": 1065,
- "total_rendered": 109819,
+ "total_rendered": 110280,
  "whitelist": 0,
  "rewrites": 47,
  "mitm_hosts": 37,
@@ -32,8 +32,8 @@
  },
  "quality_passed": true,
  "input_sha256": {
-  "johnshall": "e5763e2b8bbe7fc8775becddc812ca5915cb0e3ade9046642c71ea878155fa67",
-  "antiad": "ba0efcff7ef0af9d06ad9266f2a8110756d3e0a0d771076430fe602b64ce7bb6",
+  "johnshall": "c82d2708f8ffae45994b0ea6ff67454879d58e4efaca2378fe6b35ceedf105f0",
+  "antiad": "99d64e90e39c851b6de89177be6e8ddd5eedd182aa158279757b6c06d2f663a4",
   "awavenue": "d4e2ac925d4b6c9d5034ae2dbda2c3f2b30b9ef86b89e6d752eb90335ff11125",
   "huijingfei": "6f43ac9218d43d9ea2382199778b12641953796568f2532d8e9751e14d39054b",
   "user": "e7ace154f010e3eed4f7a5e7b1e8291340d9286e794eb4b4028c379274eb5d02"
